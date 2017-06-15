@@ -7,6 +7,11 @@ package com.google.appinventor.server;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.appengine.repackaged.com.google.api.client.extensions.appengine.http.UrlFetchTransport;
+import com.google.appengine.repackaged.com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.appengine.repackaged.com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.appengine.repackaged.com.google.api.client.json.jackson2.JacksonFactory;
+
 
 import com.google.appinventor.server.flags.Flag;
 
@@ -30,9 +35,11 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 
+import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -74,6 +81,7 @@ public class LoginServlet extends HttpServlet {
   private static final UserService userService = UserServiceFactory.getUserService();
   private final PolicyFactory sanitizer = new HtmlPolicyBuilder().allowElements("p").toFactory();
   private static final boolean DEBUG = Flag.createFlag("appinventor.debugging", false).get();
+  private static final JacksonFactory jacksonFactory = new JacksonFactory();
 
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
@@ -107,6 +115,7 @@ public class LoginServlet extends HttpServlet {
       LOG.info("locale = " + locale + " bundle: " + new Locale(locale));
     }
     ResourceBundle bundle = ResourceBundle.getBundle("com/google/appinventor/server/loginmessages", new Locale(locale));
+
 
     if (page.equals("google")) {
       // We get here after we have gone through the Google Login page
@@ -271,116 +280,181 @@ public class LoginServlet extends HttpServlet {
       return;
     }
 
-    HashMap<String, String> params = getQueryMap(queryString);
     String page = getPage(req);
-    String locale = params.get("locale");
-    String repo = params.get("repo");
-    String galleryId = params.get("galleryId");
-    String redirect = params.get("redirect");
+    HashMap<String, String> params = getQueryMap(queryString);
+    if (page.equals("googleOAuth2")) {
+      LOG.info("Login by google oauth2.0");
+      String idTokenString = params.get("tokenId");
+      LOG.info("idTokenString: " + idTokenString);
+      GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(UrlFetchTransport.getDefaultInstance(), jacksonFactory)
+              .setAudience(Collections.singletonList("207812190898-smih96muk54bsf7q1a5r5i9e386l5mdf.apps.googleusercontent.com"))
+              // Or, if multiple clients access the backend:
+              //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
+              .build();
 
-    if (locale == null) {
-      locale = "en";
-    }
-
-    ResourceBundle bundle = ResourceBundle.getBundle("com/google/appinventor/server/loginmessages", new Locale(locale));
-
-    if (DEBUG) {
-      LOG.info("locale = " + locale + " bundle: " + new Locale(locale));
-    }
-    if (page.equals("sendlink")) {
-      String email = params.get("email");
-      if (email == null) {
-        fail(req, resp, "No Email Address Provided");
-        return;
-      }
-      // Send email here, for now we put it in the error string and redirect
-      PWData pwData = storageIo.createPWData(email);
-      if (pwData == null) {
-        fail(req, resp, "Internal Error");
-        return;
-      }
-      String link = trimPage(req) + pwData.id + "/setpw";
-      sendmail(email, link, locale);
-      resp.sendRedirect("/login/linksent/");
-      storageIo.cleanuppwdata();
-      return;
-    } else if (page.equals("setpw")) {
-      if (userInfo == null || userInfo.getUserId().equals("")) {
-        fail(req, resp, "Session Timed Out");
-        return;
-      }
-      User user = storageIo.getUser(userInfo.getUserId());
-      String password = params.get("password");
-      if (password == null || password.equals("")) {
-        fail(req, resp, bundle.getString("nopassword"));
-        return;
-      }
-      String hashedPassword;
       try {
-        hashedPassword = PasswordHash.createHash(password);
-      } catch (NoSuchAlgorithmException e) {
-        fail(req, resp, "System Error hashing password");
+        GoogleIdToken idToken = verifier.verify(idTokenString);
+        if (idToken != null) {
+          GoogleIdToken.Payload payload = idToken.getPayload();
+
+          // Print user identifier
+          String userId = payload.getSubject();
+          LOG.info("userId: " + userId);
+
+          // Get profile information from payload
+          String email = payload.getEmail();
+          boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
+          String name = (String) payload.get("name");
+          String pictureUrl = (String) payload.get("picture");
+          String locale = (String) payload.get("locale");
+          String familyName = (String) payload.get("family_name");
+          String givenName = (String) payload.get("given_name");
+          LOG.info("email: " + email);
+          User user = storageIo.getUser(userId, email);
+
+          userInfo = new OdeAuthFilter.UserInfo(); // Create a new userInfo object
+          userInfo.setUserId(user.getUserId()); // This effectively logs us in!
+          userInfo.setIsAdmin(user.getIsAdmin());
+          String newCookie = userInfo.buildCookie(false);
+          if (DEBUG) {
+            LOG.info("newCookie = " + newCookie);
+          }
+          if (newCookie != null) {
+            Cookie cook = new Cookie("AppInventor", newCookie);
+            cook.setPath("/");
+            resp.addCookie(cook);
+          }
+          // Remove the ACSID Cookie used by Google for Authentication
+          Cookie cook = new Cookie("ACSID", null);
+          cook.setPath("/");
+          cook.setMaxAge(0);
+          resp.addCookie(cook);
+
+          // Use or store profile information
+          resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+          resp.getWriter().write("ok");
+
+        } else {
+          System.out.println("Invalid ID token.");
+        }
+      } catch (GeneralSecurityException e) {
+        // login fail
+        oauthFail(req, resp, "Google Sign-in Fail");
+        e.printStackTrace();
+      }
+
+    } else {
+      LOG.info("Normal Login");
+
+      String locale = params.get("locale");
+      String repo = params.get("repo");
+      String galleryId = params.get("galleryId");
+      String redirect = params.get("redirect");
+
+      if (locale == null) {
+        locale = "en";
+      }
+
+      ResourceBundle bundle = ResourceBundle.getBundle("com/google/appinventor/server/loginmessages", new Locale(locale));
+
+      if (DEBUG) {
+        LOG.info("locale = " + locale + " bundle: " + new Locale(locale));
+      }
+      if (page.equals("sendlink")) {
+        String email = params.get("email");
+        if (email == null) {
+          fail(req, resp, "No Email Address Provided");
+          return;
+        }
+        // Send email here, for now we put it in the error string and redirect
+        PWData pwData = storageIo.createPWData(email);
+        if (pwData == null) {
+          fail(req, resp, "Internal Error");
+          return;
+        }
+        String link = trimPage(req) + pwData.id + "/setpw";
+        sendmail(email, link, locale);
+        resp.sendRedirect("/login/linksent/");
+        storageIo.cleanuppwdata();
         return;
-      } catch (InvalidKeySpecException e) {
-        fail(req, resp, "System Error hashing password");
+      } else if (page.equals("setpw")) {
+        if (userInfo == null || userInfo.getUserId().equals("")) {
+          fail(req, resp, "Session Timed Out");
+          return;
+        }
+        User user = storageIo.getUser(userInfo.getUserId());
+        String password = params.get("password");
+        if (password == null || password.equals("")) {
+          fail(req, resp, bundle.getString("nopassword"));
+          return;
+        }
+        String hashedPassword;
+        try {
+          hashedPassword = PasswordHash.createHash(password);
+        } catch (NoSuchAlgorithmException e) {
+          fail(req, resp, "System Error hashing password");
+          return;
+        } catch (InvalidKeySpecException e) {
+          fail(req, resp, "System Error hashing password");
+          return;
+        }
+
+        storageIo.setUserPassword(user.getUserId(), hashedPassword);
+        String uri = new UriBuilder("/")
+                .add("locale", locale)
+                .add("repo", repo)
+                .add("galleryId", galleryId).build();
+        resp.sendRedirect(uri);   // Logged in, go to service
         return;
       }
 
-      storageIo.setUserPassword(user.getUserId(),  hashedPassword);
-      String uri = new UriBuilder("/")
-        .add("locale", locale)
-        .add("repo", repo)
-        .add("galleryId", galleryId).build();
-      resp.sendRedirect(uri);   // Logged in, go to service
-      return;
-    }
+      String email = params.get("email");
+      String password = params.get("password"); // We don't check it now
+      User user = storageIo.getUserFromEmail(email);
+      boolean validLogin = false;
 
-    String email = params.get("email");
-    String password = params.get("password"); // We don't check it now
-    User user = storageIo.getUserFromEmail(email);
-    boolean validLogin = false;
+      String hash = user.getPassword();
+      if ((hash == null) || hash.equals("")) {
+        fail(req, resp, "No Password Set for User");
+        return;
+      }
 
-    String hash = user.getPassword();
-    if ((hash == null) || hash.equals("")) {
-      fail(req, resp, "No Password Set for User");
-      return;
-    }
+      try {
+        validLogin = PasswordHash.validatePassword(password, hash);
+      } catch (NoSuchAlgorithmException e) {
+      } catch (InvalidKeySpecException e) {
+      }
 
-    try {
-      validLogin = PasswordHash.validatePassword(password, hash);
-    } catch (NoSuchAlgorithmException e) {
-    } catch (InvalidKeySpecException e) {
-    }
+      if (!validLogin) {
+        fail(req, resp, bundle.getString("invalidpassword"));
+        return;
+      }
 
-    if (!validLogin) {
-      fail(req, resp, bundle.getString("invalidpassword"));
-      return;
-    }
+      if (DEBUG) {
+        LOG.info("userInfo = " + userInfo + " user = " + user);
+      }
+      userInfo.setUserId(user.getUserId());
+      userInfo.setIsAdmin(user.getIsAdmin());
+      String newCookie = userInfo.buildCookie(false);
+      if (DEBUG) {
+        LOG.info("newCookie = " + newCookie);
+      }
+      if (newCookie != null) {
+        Cookie cook = new Cookie("AppInventor", newCookie);
+        cook.setPath("/");
+        resp.addCookie(cook);
+      }
 
-    if (DEBUG) {
-      LOG.info("userInfo = " + userInfo + " user = " + user);
+      String uri = "/";
+      if (redirect != null && !redirect.equals("")) {
+        uri = redirect;
+      }
+      uri = new UriBuilder(uri)
+              .add("locale", locale)
+              .add("repo", repo)
+              .add("galleryId", galleryId).build();
+      resp.sendRedirect(uri);
     }
-    userInfo.setUserId(user.getUserId());
-    userInfo.setIsAdmin(user.getIsAdmin());
-    String newCookie = userInfo.buildCookie(false);
-    if (DEBUG) {
-      LOG.info("newCookie = " + newCookie);
-    }
-    if (newCookie != null) {
-      Cookie cook = new Cookie("AppInventor", newCookie);
-      cook.setPath("/");
-      resp.addCookie(cook);
-    }
-
-    String uri = "/";
-    if (redirect != null && !redirect.equals("")) {
-      uri = redirect;
-    }
-    uri = new UriBuilder(uri)
-      .add("locale", locale)
-      .add("repo", repo)
-      .add("galleryId", galleryId).build();
-    resp.sendRedirect(uri);
   }
 
   public void destroy() {
@@ -424,6 +498,10 @@ public class LoginServlet extends HttpServlet {
     for (int i = 0; i < components.length-1; i++)
       sb.append(components[i] + "/");
     return sb.toString();
+  }
+
+  private void oauthFail(HttpServletRequest req, HttpServletResponse resp, String error) throws IOException {
+    resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
 
   private void fail(HttpServletRequest req, HttpServletResponse resp, String error) throws IOException {
