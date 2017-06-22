@@ -40,7 +40,11 @@ public class LogoutServlet extends OdeServlet {
 
     // Note: The code below will logout you out of ALL Google services
     // (which can be pretty annoying
-    if (useGoogle.get() == true) {
+    String type = req.getParameter("return");
+    if ("json".equals(type)) {
+      res.setStatus(HttpServletResponse.SC_ACCEPTED);
+      res.getWriter().write("OK");
+    } else if (useGoogle.get() == true) {
       res.sendRedirect(UserServiceFactory.getUserService().createLogoutURL("/"));
       res.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
     } else {
