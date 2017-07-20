@@ -169,13 +169,13 @@
   // will be included, so when test-raw.html loads each input in RAW mode,
   // it is important that the proper charset be used.
   "output-charset": "UTF-8",
-    "output-wrapper": "module.exports = (function() { %output% Blockly.goog=goog;return Blockly;}).call(this)",
+    "output-wrapper": "module.exports = (function() { %output% Blockly.goog=goog;return Blockly;}).call(window)",
   // "mode": "RAW",
   "mode": "SIMPLE",
   // "mode" : "WHITESPACE_ONLY",
   "experimental-compiler-options": {
     "languageIn": "ECMASCRIPT5"
   },
-  "closure-library" : "../lib/closure-library/closure/goog",
-  "output-file": "../../../lcd-ai3-blockly/lib/blockly-compiled.js"
+  "closure-library" : "../../../closure-library/closure/goog",
+  "output-file": "../../../lcd-ai3/app/lib/blockly-compiled.js"
 }
