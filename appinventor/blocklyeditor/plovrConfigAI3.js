@@ -169,7 +169,7 @@
   // will be included, so when test-raw.html loads each input in RAW mode,
   // it is important that the proper charset be used.
   "output-charset": "UTF-8",
-    "output-wrapper": "module.exports = (function() { %output% Blockly.goog=goog;return Blockly;}).call(window)",
+    "output-wrapper": "module.exports = (function() { %output% Blockly.goog=goog; Blockly.AI=AI; Blockly.Css.inject(true, './assets'); return Blockly;}).call(window)",
   // "mode": "RAW",
   "mode": "SIMPLE",
   // "mode" : "WHITESPACE_ONLY",
