@@ -65,7 +65,7 @@
          "example.com:8888" would mean the Rendezvous Server would be querired
          on http://example.com:8888/rendezvous/. -->
 
-    <property name="use.rendezvousserver" value=""/>
+    <property name="use.rendezvousserver" value="https://projc-ai3-stg.ygn.org.hk:11211"/>
 
     <!-- set to true if users should not be allowed to access the App
          Inventor server unless they are listed in the appengine/war/whitelist file -->
@@ -106,7 +106,7 @@
     <property name="localauth.mailserver.password" value="changeme" />
 
     <!-- host[:port] to use for connecting to the build server -->
-    <property name="build.server.host" value="localhost:9990" />
+    <property name="build.server.host" value="projc-ai3-stg.ygn.org.hk:9990" />
 
     <!-- We provide below for a second buildserver. If this field is
          non-empty then the user is presented a choice of two different
