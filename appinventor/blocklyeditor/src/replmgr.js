@@ -210,8 +210,9 @@ Blockly.ReplMgr.sendFormData = function(formJson, packageName, workspace) {
 Blockly.ReplMgr.pollYail = function(workspace) {
     var RefreshAssets = top.AssetManager_refreshAssets;
     try {
-        if (window === undefined)    // If window is gone, then we are a zombie timer firing
+        if (window === undefined) {   // If window is gone, then we are a zombie timer firing
             return;                  // in a destroyed frame.
+        }
     } catch (err) {                  // We get an error on FireFox when window is gone.
         return;
     }
