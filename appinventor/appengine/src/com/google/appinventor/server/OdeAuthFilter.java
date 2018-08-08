@@ -7,6 +7,7 @@
 package com.google.appinventor.server;
 
 import com.google.appinventor.server.cookieauth.CookieAuth;
+
 import java.io.Serializable;
 
 import com.google.appinventor.server.flags.Flag;
@@ -49,7 +50,8 @@ import org.keyczar.util.Base64Coder;
 @SuppressWarnings({"ThrowableInstanceNeverThrown"})
 public class OdeAuthFilter implements Filter {
 
-  public OdeAuthFilter() {}
+  public OdeAuthFilter() {
+  }
 
   private static final Logger LOG = Logger.getLogger(OdeAuthFilter.class.getName());
 
@@ -69,13 +71,13 @@ public class OdeAuthFilter implements Filter {
 
   private final LocalUser localUser = LocalUser.getInstance();
   private static final boolean DEBUG = Flag.createFlag("appinventor.debugging", false).get();
-
+  private static final String ALLOWED_DOMAINS_REGEXP = ".*[localhost|projectc|projc|lcd|ydt|200].*";
   /**
    * Filters using Google Accounts
    */
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-      throws IOException, ServletException {
+          throws IOException, ServletException {
 
     if (!(request instanceof HttpServletRequest && response instanceof HttpServletResponse)) {
       throw new ServletException("Unsupported request type.");
@@ -83,6 +85,31 @@ public class OdeAuthFilter implements Filter {
 
     final HttpServletRequest httpRequest = (HttpServletRequest) request;
     final HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+    String origin = httpRequest.getHeader("Origin");
+    if (origin != null && origin.matches(ALLOWED_DOMAINS_REGEXP)) {
+      LOG.log(Level.INFO, origin + ": Allowed");
+      httpResponse.addHeader("Access-Control-Allow-Origin", origin);
+      httpResponse.addHeader("Access-Control-Allow-Credentials", "true");
+      if ("options".equalsIgnoreCase(httpRequest.getMethod())) {
+        httpResponse.setHeader("Allow", "GET, POST, OPTIONS");
+        String headers = httpRequest.getHeader("Access-Control-Request-Headers");
+        String method = httpRequest.getHeader("Access-Control-Request-Method");
+        httpResponse.addHeader("Access-Control-Allow-Methods", method);
+        httpResponse.addHeader("Access-Control-Allow-Headers", headers);
+        // optional, only needed if you want to allow cookies.
+        httpResponse.setContentType("text/x-gwt-rpc");
+        httpResponse.getWriter().flush();
+        return;
+      }
+    } else {
+      LOG.log(Level.WARNING, origin + ": Rejected");
+    }
+
+    // Fix ios6 caching post requests
+    if ("post".equalsIgnoreCase(httpRequest.getMethod())) {
+      httpResponse.addHeader("Cache-Control", "no-cache");
+    }
 
     // Use Local Authentication
     // String userid = (String) httpRequest.getSession().getAttribute("userid");
@@ -135,8 +162,8 @@ public class OdeAuthFilter implements Filter {
 
   @VisibleForTesting
   void doMyFilter(UserInfo userInfo, boolean isAdmin, boolean isReadOnly,
-    HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-    throws IOException, ServletException {
+                  HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+          throws IOException, ServletException {
 
     // Setup the user object for OdeRemoteServiceServlet
     setUserFromUserId(userInfo.userId, isAdmin, isReadOnly);
@@ -168,7 +195,7 @@ public class OdeAuthFilter implements Filter {
       // If user hasn't accepted terms of service, redirect them,
       // unless they're submitting the acceptance request.
       if (!localUser.getUserTosAccepted() && !isReadOnly &&
-          !request.getRequestURI().endsWith(ServerLayout.ACCEPT_TOS_SERVLET)) {
+              !request.getRequestURI().endsWith(ServerLayout.ACCEPT_TOS_SERVLET)) {
         // This indicates to the client side code that the user needs to accept
         // the terms of service. We don't send the redirect here because
         // it isn't understood properly by GWT RPC
@@ -177,7 +204,7 @@ public class OdeAuthFilter implements Filter {
       }
       String newCookie = userInfo.buildCookie(true);
       if (newCookie != null) {  // If we get a value here, it is time to renew
-                                // the Cookie
+        // the Cookie
         if (DEBUG) {
           LOG.info("Renewing the authentication Cookie");
         }
@@ -202,9 +229,9 @@ public class OdeAuthFilter implements Filter {
     response.setContentType("text/plain; charset=utf-8");
     PrintWriter out = response.getWriter();
     out.print("You are attempting to connect to this App Inventor service with the login ID:\n\n" +
-        localUser.getUserEmail() + "\n\nThat ID has not been authorized to use this service.  " +
-        "If you believe that you were in fact given authorization, you should contact the " +
-        "service operator.");
+            localUser.getUserEmail() + "\n\nThat ID has not been authorized to use this service.  " +
+            "If you believe that you were in fact given authorization, you should contact the " +
+            "service operator.");
   }
 
   /*
@@ -217,7 +244,7 @@ public class OdeAuthFilter implements Filter {
     User user = storageIo.getUser(userId);
     if (!user.getIsAdmin() && isAdmin) {
       user.setIsAdmin(true);    // If session says they are an admin (which is the case
-                                // if they are a Google Account with Developer access
+      // if they are a Google Account with Developer access
     }
     user.setReadOnly(isReadOnly);
     localUser.set(user);
@@ -301,17 +328,17 @@ public class OdeAuthFilter implements Filter {
       try {
         long offset = System.currentTimeMillis() - this.ts;
         offset /= 1000;
-        if (offset > (60*renewTime.get())) {    // Renew if it is time
+        if (offset > (60 * renewTime.get())) {    // Renew if it is time
           modified = true;
           ts = System.currentTimeMillis();
         }
         if (!ifNeeded || modified) {
           Crypter crypter = getCrypter();
           CookieAuth.cookie cookie = CookieAuth.cookie.newBuilder()
-            .setUuid(this.userId)
-            .setTs(this.ts)
-            .setIsAdmin(this.isAdmin)
-            .setIsReadOnly(this.isReadOnly).build();
+                  .setUuid(this.userId)
+                  .setTs(this.ts)
+                  .setIsAdmin(this.isAdmin)
+                  .setIsReadOnly(this.isReadOnly).build();
           return Base64Coder.encode(crypter.encrypt(cookie.toByteArray()));
         } else {
           return null;
@@ -331,7 +358,7 @@ public class OdeAuthFilter implements Filter {
       // future to deal with potential clock skew between app inventor
       // servers
 
-      if (offset < -60 || offset > (60*idleTimeout.get())) {
+      if (offset < -60 || offset > (60 * idleTimeout.get())) {
         return false;
       } else {
         return true;
@@ -341,7 +368,7 @@ public class OdeAuthFilter implements Filter {
 
   public static UserInfo getUserInfo(HttpServletRequest request) {
     try {
-      Cookie [] cookies = request.getCookies();
+      Cookie[] cookies = request.getCookies();
       if (cookies != null)
         for (Cookie cookie : cookies) {
           if ("AppInventor".equals(cookie.getName())) {
@@ -351,7 +378,7 @@ public class OdeAuthFilter implements Filter {
             }
             Crypter crypter = getCrypter();
             CookieAuth.cookie cookieToken = CookieAuth.cookie.parseFrom(
-              crypter.decrypt(Base64Coder.decode(rawData)));
+                    crypter.decrypt(Base64Coder.decode(rawData)));
             UserInfo uInfo = new UserInfo();
             uInfo.userId = cookieToken.getUuid();
             uInfo.ts = cookieToken.getTs();
@@ -374,7 +401,7 @@ public class OdeAuthFilter implements Filter {
   }
 
   private static Crypter getCrypter() throws KeyczarException {
-    synchronized(crypterSync) {
+    synchronized (crypterSync) {
       if (crypter != null) {
         return crypter;
       } else {
