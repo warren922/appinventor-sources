@@ -71,7 +71,6 @@ public class OdeAuthFilter implements Filter {
 
   private final LocalUser localUser = LocalUser.getInstance();
   private static final boolean DEBUG = Flag.createFlag("appinventor.debugging", false).get();
-  private static final String ALLOWED_DOMAINS_REGEXP = ".*[localhost|projectc|projc|lcd|ydt|200].*";
   /**
    * Filters using Google Accounts
    */
@@ -85,31 +84,6 @@ public class OdeAuthFilter implements Filter {
 
     final HttpServletRequest httpRequest = (HttpServletRequest) request;
     final HttpServletResponse httpResponse = (HttpServletResponse) response;
-
-    String origin = httpRequest.getHeader("Origin");
-    if (origin != null && origin.matches(ALLOWED_DOMAINS_REGEXP)) {
-      LOG.log(Level.INFO, origin + ": Allowed");
-      httpResponse.addHeader("Access-Control-Allow-Origin", origin);
-      httpResponse.addHeader("Access-Control-Allow-Credentials", "true");
-      if ("options".equalsIgnoreCase(httpRequest.getMethod())) {
-        httpResponse.setHeader("Allow", "GET, POST, OPTIONS");
-        String headers = httpRequest.getHeader("Access-Control-Request-Headers");
-        String method = httpRequest.getHeader("Access-Control-Request-Method");
-        httpResponse.addHeader("Access-Control-Allow-Methods", method);
-        httpResponse.addHeader("Access-Control-Allow-Headers", headers);
-        // optional, only needed if you want to allow cookies.
-        httpResponse.setContentType("text/x-gwt-rpc");
-        httpResponse.getWriter().flush();
-        return;
-      }
-    } else {
-      LOG.log(Level.WARNING, origin + ": Rejected");
-    }
-
-    // Fix ios6 caching post requests
-    if ("post".equalsIgnoreCase(httpRequest.getMethod())) {
-      httpResponse.addHeader("Cache-Control", "no-cache");
-    }
 
     // Use Local Authentication
     // String userid = (String) httpRequest.getSession().getAttribute("userid");
