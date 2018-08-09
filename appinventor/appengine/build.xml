@@ -168,6 +168,7 @@
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/jackson-core-2.1.3.jar" />
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-api-client-1.22.0.jar" />
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-api-client-appengine-1.22.0.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-oauth-client-1.22.0.jar" />
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-http-client-1.22.0.jar" />
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-http-client-appengine-1.22.0.jar" />
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-http-client-jackson-1.22.0.jar" />

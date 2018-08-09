@@ -7,10 +7,11 @@ package com.google.appinventor.server;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.appengine.repackaged.com.google.api.client.extensions.appengine.http.UrlFetchTransport;
-import com.google.appengine.repackaged.com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.appengine.repackaged.com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.appengine.repackaged.com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.extensions.appengine.http.UrlFetchTransport;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.json.jackson2.JacksonFactory;
 
 
 import com.google.appinventor.server.flags.Flag;
@@ -295,7 +296,7 @@ public class LoginServlet extends HttpServlet {
       try {
         GoogleIdToken idToken = verifier.verify(idTokenString);
         if (idToken != null) {
-          GoogleIdToken.Payload payload = idToken.getPayload();
+          Payload payload = idToken.getPayload();
 
           // Print user identifier
           String userId = payload.getSubject();
