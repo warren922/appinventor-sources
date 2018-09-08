@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class CORSFilter implements Filter {
   // For security reasons set this regex to an appropriate value
   // example: ".*example\\.com"
-  private static final String ALLOWED_DOMAINS_REGEXP = ".*[localhost|projectc|projc|lcd|ydt|200].*";
+  private static final String ALLOWED_DOMAINS_REGEXP = ".*[localhost|youcodia|youCodia|projectc|projc|lcd|ydt|200].*";
   private static final Logger LOG = Logger.getLogger("CORS");
 
   public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
