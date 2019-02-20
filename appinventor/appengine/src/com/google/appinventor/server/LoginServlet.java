@@ -13,7 +13,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
-
 import com.google.appinventor.server.flags.Flag;
 
 import com.google.appinventor.server.storage.StorageIo;
@@ -62,7 +61,7 @@ import org.owasp.html.PolicyFactory;
  * name and a password, which is stored hashed (and salted). Facilities are
  * provided to e-mail a password to an e-mail address both to set one up the
  * first time and to recover a lost password.
- *
+ * <p>
  * This implementation uses a helper server to send mail. It does a webservices
  * transaction (REST/POST) to the server with the email address and reset url.
  * The helper server then formats the e-mail message and sends it. The source
@@ -92,7 +91,7 @@ public class LoginServlet extends HttpServlet {
     resp.setContentType("text/html; charset=utf-8");
 
     PrintWriter out;
-    String [] components = req.getRequestURI().split("/");
+    String[] components = req.getRequestURI().split("/");
     if (DEBUG) {
       LOG.info("requestURI = " + req.getRequestURI());
     }
@@ -116,7 +115,6 @@ public class LoginServlet extends HttpServlet {
       LOG.info("locale = " + locale + " bundle: " + new Locale(locale));
     }
     ResourceBundle bundle = ResourceBundle.getBundle("com/google/appinventor/server/loginmessages", new Locale(locale));
-
 
     if (page.equals("google")) {
       // We get here after we have gone through the Google Login page
@@ -157,9 +155,9 @@ public class LoginServlet extends HttpServlet {
         uri = redirect;
       }
       uri = new UriBuilder(uri)
-        .add("locale", locale)
-        .add("repo", repo)
-        .add("galleryId", galleryId).build();
+              .add("locale", locale)
+              .add("repo", repo)
+              .add("galleryId", galleryId).build();
       resp.sendRedirect(uri);
       return;
     } else {
@@ -174,10 +172,10 @@ public class LoginServlet extends HttpServlet {
           return;
         }
         String uri = new UriBuilder("/login/google")
-          .add("locale", locale)
-          .add("repo", repo)
-          .add("galleryId", galleryId)
-          .add("redirect", redirect).build();
+                .add("locale", locale)
+                .add("repo", repo)
+                .add("galleryId", galleryId)
+                .add("redirect", redirect).build();
         resp.sendRedirect(uri);
         return;
       }
@@ -256,6 +254,7 @@ public class LoginServlet extends HttpServlet {
     req.setAttribute("repo", repo);
     req.setAttribute("locale", locale);
     req.setAttribute("galleryId", galleryId);
+
     try {
       req.getRequestDispatcher("/login.jsp").forward(req, resp);
     } catch (ServletException e) {
@@ -333,7 +332,7 @@ public class LoginServlet extends HttpServlet {
 
           // Use or store profile information
           resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-          resp.getWriter().write("ok");
+          resp.getWriter().write(newCookie);
 
         } else {
           System.out.println("Invalid ID token.");
@@ -446,15 +445,20 @@ public class LoginServlet extends HttpServlet {
         resp.addCookie(cook);
       }
 
-      String uri = "/";
-      if (redirect != null && !redirect.equals("")) {
-        uri = redirect;
+      String youCodia = params.get("youCodia");
+      if (youCodia != null) {
+        resp.getWriter().write(newCookie);
+      } else {
+        String uri = "/";
+        if (redirect != null && !redirect.equals("")) {
+          uri = redirect;
+        }
+        uri = new UriBuilder(uri)
+                .add("locale", locale)
+                .add("repo", repo)
+                .add("galleryId", galleryId).build();
+        resp.sendRedirect(uri);
       }
-      uri = new UriBuilder(uri)
-              .add("locale", locale)
-              .add("repo", repo)
-              .add("galleryId", galleryId).build();
-      resp.sendRedirect(uri);
     }
   }
 
@@ -462,14 +466,14 @@ public class LoginServlet extends HttpServlet {
     super.destroy();
   }
 
-  private static HashMap<String, String> getQueryMap(String query)  {
+  private static HashMap<String, String> getQueryMap(String query) {
     HashMap<String, String> map = new HashMap<String, String>();
     if (query == null || query.equals("")) {
       return map;               // Empty map
     }
     String[] params = query.split("&");
-    for (String param : params)  {
-      String [] nvpair = param.split("=");
+    for (String param : params) {
+      String[] nvpair = param.split("=");
       if (nvpair.length <= 1) {
         map.put(nvpair[0], "");
       } else
@@ -482,21 +486,21 @@ public class LoginServlet extends HttpServlet {
   // The page identifier is *after* the parameter, if there is one.
 
   private String getPage(HttpServletRequest req) {
-    String [] components = req.getRequestURI().split("/");
-    return components[components.length-1];
+    String[] components = req.getRequestURI().split("/");
+    return components[components.length - 1];
   }
 
   private String getParam(HttpServletRequest req) {
-    String [] components = req.getRequestURI().split("/");
+    String[] components = req.getRequestURI().split("/");
     if (components.length < 2)
       return null;
-    return components[components.length-2];
+    return components[components.length - 2];
   }
 
   private String trimPage(HttpServletRequest req) {
-    String [] components = req.getRequestURL().toString().split("/");
+    String[] components = req.getRequestURL().toString().split("/");
     StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < components.length-1; i++)
+    for (int i = 0; i < components.length - 1; i++)
       sb.append(components[i] + "/");
     return sb.toString();
   }
@@ -522,7 +526,7 @@ public class LoginServlet extends HttpServlet {
       connection.setRequestMethod("POST");
       PrintWriter stream = new PrintWriter(connection.getOutputStream());
       stream.write("email=" + URLEncoder.encode(email) + "&url=" + URLEncoder.encode(url) +
-          "&pass=" + password.get() + "&locale=" + locale);
+              "&pass=" + password.get() + "&locale=" + locale);
       stream.flush();
       stream.close();
       int responseCode = 0;
@@ -537,7 +541,7 @@ public class LoginServlet extends HttpServlet {
   }
 
   private PrintWriter setCookieOutput(OdeAuthFilter.UserInfo userInfo, HttpServletResponse resp)
-    throws IOException {
+          throws IOException {
     if (userInfo != null) {     // if we never had logged in, this will be null!
       String newCookie = userInfo.buildCookie(true);
       if (newCookie != null) {

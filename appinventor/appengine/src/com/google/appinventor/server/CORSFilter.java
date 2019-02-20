@@ -33,7 +33,7 @@ public class CORSFilter implements Filter {
           String headers = req.getHeader("Access-Control-Request-Headers");
           String method = req.getHeader("Access-Control-Request-Method");
           resp.addHeader("Access-Control-Allow-Methods", method);
-          resp.addHeader("Access-Control-Allow-Headers", headers);
+          resp.addHeader("Access-Control-Allow-Headers", headers + ", youcodia, set-cookie");
           // optional, only needed if you want to allow cookies.
           resp.setContentType("text/x-gwt-rpc");
         }
