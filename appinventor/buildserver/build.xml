@@ -260,7 +260,7 @@
   <target name="installplay"
           depends="PlayApp">
     <exec executable="adb" failonerror="false">
-      <arg line="uninstall edu.mit.appinventor.aicompanion3" />
+      <arg line="uninstall life.youcodia.companion" />
     </exec>
     <exec executable="adb" failonerror="true">
       <arg line='install "${public.build.dir}/MIT AI2 Companion.apk"' />
