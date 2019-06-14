@@ -8,7 +8,7 @@
         <field name="PROP">Text</field>
         <value name="VALUE">
           <block type="text" id="3">
-            <field name="TEXT">The version of App Inventor you are using is not compatible with this Companion app. </field>
+            <field name="TEXT">The version of youCodia you are using is not compatible with this Companion app. </field>
           </block>
         </value>
       </block>
