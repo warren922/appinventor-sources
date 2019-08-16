@@ -6,44 +6,20 @@
 package com.google.appinventor.components.runtime;
 
 import android.app.Activity;
-
 import android.content.Context;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
-
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-
-import android.os.Build;
-
 import android.util.Log;
-
-import com.google.appinventor.components.annotations.DesignerComponent;
-import com.google.appinventor.components.annotations.DesignerProperty;
-import com.google.appinventor.components.annotations.PropertyCategory;
-import com.google.appinventor.components.annotations.SimpleEvent;
-import com.google.appinventor.components.annotations.SimpleFunction;
-import com.google.appinventor.components.annotations.SimpleObject;
-import com.google.appinventor.components.annotations.SimpleProperty;
-import com.google.appinventor.components.annotations.UsesLibraries;
-import com.google.appinventor.components.annotations.UsesNativeLibraries;
-
+import com.google.appinventor.components.annotations.*;
 import com.google.appinventor.components.common.ComponentCategory;
 import com.google.appinventor.components.common.PropertyTypeConstants;
 import com.google.appinventor.components.common.YaVersion;
-
-import com.google.appinventor.components.runtime.Form;
-import com.google.appinventor.components.runtime.ReplForm;
-import com.google.appinventor.components.runtime.util.AppInvHTTPD;
-import com.google.appinventor.components.runtime.util.EclairUtil;
-import com.google.appinventor.components.runtime.util.PackageInstaller;
-import com.google.appinventor.components.runtime.util.SdkLevel;
-import com.google.appinventor.components.runtime.util.WebRTCNativeMgr;
+import com.google.appinventor.components.runtime.util.*;
 
 import java.security.MessageDigest;
-
 import java.util.Formatter;
 
 
@@ -262,7 +238,7 @@ public class PhoneStatus extends AndroidNonvisibleComponent implements Component
   @SimpleFunction(description = "Return the app that installed us")
   public String GetInstaller() {
     if (SdkLevel.getLevel() >= SdkLevel.LEVEL_ECLAIR) {
-      String installer = EclairUtil.getInstallerPackageName("edu.mit.appinventor.aicompanion3", form);
+      String installer = EclairUtil.getInstallerPackageName("life.youcodia.companion", form);
       if (installer == null) {
         return "sideloaded";
       } else {

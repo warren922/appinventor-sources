@@ -42,8 +42,8 @@ top.loadAll = true;             // Use "Chunked" loading for initial form load
                                 // in the top window to ease debugging (this may change
                                 // in the future).
 
-                                // Note: While we develop webrtc communication, we
-                                // are not using the chunking code (jis: 07/08/2018)
+// Note: While we develop webrtc communication, we
+// are not using the chunking code (jis: 07/08/2018)
 
 top.loadAllErrorCount = 0;      // When we get an error loading a chunk, we turn off
                                 // loadAll and set this to some positive value
@@ -60,25 +60,26 @@ top.loadAllErrorCount = 0;      // When we get an error loading a chunk, we turn
 // Repl "state" definitions
 
 Blockly.ReplMgr.rsState = {
-  IDLE : 0,                   // Not connected nor connection requested
-  RENDEZVOUS: 1,              // Waiting for the Rendezvous server to answer
-  CONNECTED: 2,               // Connected to Repl
-  WAITING: 3,                 // Waiting for the Emulator to start
-  ASSET: 4,                   // Transfering Assets to the Repl
-  EXTENSIONS: 5               // Load extensions on phone
+    IDLE: 0,                   // Not connected nor connection requested
+    RENDEZVOUS: 1,              // Waiting for the Rendezvous server to answer
+    CONNECTED: 2,               // Connected to Repl
+    WAITING: 3,                 // Waiting for the Emulator to start
+    ASSET: 4,                   // Transfering Assets to the Repl
+    EXTENSIONS: 5               // Load extensions on phone
 };
 
-Blockly.ReplStateObj = function() {};
+Blockly.ReplStateObj = function () {
+};
 
 Blockly.ReplStateObj.prototype = {
-    'state' : Blockly.ReplMgr.rsState.IDLE,     // Is the connection to the Repl Up
-    'url' : null,                       // The url of the repl (Companion) when known
-    'baseurl' : null,                   // URL used to upload assets
-    'replcode' : null,                  // The six digit code used for rendezvous
-    'rendezvouscode' : null,            // Code used for Rendezvous (hash of replcode)
-    'dialog' : null,                    // The Dialog Box with the code and QR Code
-    'count' : 0,                        // Count of number of reads from rendezvous server
-    'didversioncheck' : false
+    'state': Blockly.ReplMgr.rsState.IDLE,     // Is the connection to the Repl Up
+    'url': null,                       // The url of the repl (Companion) when known
+    'baseurl': null,                   // URL used to upload assets
+    'replcode': null,                  // The six digit code used for rendezvous
+    'rendezvouscode': null,            // Code used for Rendezvous (hash of replcode)
+    'dialog': null,                    // The Dialog Box with the code and QR Code
+    'count': 0,                        // Count of number of reads from rendezvous server
+    'didversioncheck': false
 };
 
 // Blockly is only loaded once now, so we can init this here.
@@ -87,7 +88,7 @@ top.ReplState.phoneState = {};
 
 // Blockly.mainWorkSpace --- hold the main workspace
 
-Blockly.ReplMgr.isConnected = function() {
+Blockly.ReplMgr.isConnected = function () {
     return top.ReplState.state === Blockly.ReplMgr.rsState.CONNECTED;
 };
 
@@ -95,7 +96,7 @@ Blockly.ReplMgr.isConnected = function() {
  * Build YAIL for sending to the companion.
  * @param {Blockly.WorkspaceSvg} workspace
  */
-Blockly.ReplMgr.buildYail = function(workspace) {
+Blockly.ReplMgr.buildYail = function (workspace) {
     var phoneState;
     var code = [];
     var blocks;
@@ -115,12 +116,12 @@ Blockly.ReplMgr.buildYail = function(workspace) {
 
     var nameConverter;
     if (phoneState.nofqcn) {
-        nameConverter = function(input) {
+        nameConverter = function (input) {
             var s = input.split('.');
-            return s[s.length-1];
+            return s[s.length - 1];
         };
     } else {
-        nameConverter = function(input) {
+        nameConverter = function (input) {
             return input;
         };
     }
@@ -146,8 +147,9 @@ Blockly.ReplMgr.buildYail = function(workspace) {
         // Fetch all of the components in the form, this may result in duplicates
         componentNames = Blockly.Yail.getDeepNames(formProperties, componentNames);
         // Remove the duplicates
-        var uniqueNames = componentNames.filter(function(elem, pos) {
-            return componentNames.indexOf(elem) == pos;});
+        var uniqueNames = componentNames.filter(function (elem, pos) {
+            return componentNames.indexOf(elem) == pos;
+        });
         componentNames = uniqueNames;
 
         code = code.join('\n');
@@ -166,12 +168,12 @@ Blockly.ReplMgr.buildYail = function(workspace) {
     }
 
     blocks = Blockly.mainWorkspace.getTopBlocks(true);
-    var success = function() {
+    var success = function () {
         if (this.block.replError)
             this.block.replError = null;
         this.block.workspace.getWarningHandler().checkAllBlocksForWarningsAndErrors();
     };
-    var failure = function(message) {
+    var failure = function (message) {
         this.block.replError = message;
         this.block.workspace.getWarningHandler().checkAllBlocksForWarningsAndErrors();
     };
@@ -201,11 +203,11 @@ Blockly.ReplMgr.buildYail = function(workspace) {
     }
 };
 
-Blockly.ReplMgr.sendFormData = function(formJson, packageName, workspace) {
+Blockly.ReplMgr.sendFormData = function (formJson, packageName, workspace) {
     top.ReplState.phoneState.formJson = formJson;
     top.ReplState.phoneState.packageName = packageName;
     var context = this;
-    var poller = function() {   // Keep track of "this"
+    var poller = function () {   // Keep track of "this"
         context.polltimer = null;
         return context.pollYail.call(context, workspace);
     };
@@ -215,7 +217,7 @@ Blockly.ReplMgr.sendFormData = function(formJson, packageName, workspace) {
     this.polltimer = setTimeout(poller, 500);
 };
 
-Blockly.ReplMgr.pollYail = function(workspace) {
+Blockly.ReplMgr.pollYail = function (workspace) {
     var RefreshAssets = top.AssetManager_refreshAssets;
     try {
         if (window === undefined) {   // If window is gone, then we are a zombie timer firing
@@ -228,15 +230,16 @@ Blockly.ReplMgr.pollYail = function(workspace) {
         this.buildYail(workspace);
     }
     if (top.ReplState.state == this.rsState.CONNECTED) {
-        RefreshAssets(function() {});
+        RefreshAssets(function () {
+        });
     }
 };
 
-Blockly.ReplMgr.resetYail = function(partial) {
+Blockly.ReplMgr.resetYail = function (partial) {
     top.ReplState.phoneState.initialized = false; // so running io stops
     if (!partial) {
         this.putYail.reset();
-        top.ReplState.phoneState = { "phoneQueue" : [], "assetQueue" : []};
+        top.ReplState.phoneState = {"phoneQueue": [], "assetQueue": []};
     }
 };
 
@@ -252,7 +255,7 @@ Blockly.ReplMgr.resetYail = function(partial) {
 // Ajax call looks to process the next entry in the queue. This continues
 // until the queue is empty.
 
-Blockly.ReplMgr.putYail = (function() {
+Blockly.ReplMgr.putYail = (function () {
     var rs;
     var conn;                   // XMLHttpRequest Object sending to Phone
     var rxhr;                   // XMLHttpRequest Object listening for returns
@@ -265,15 +268,19 @@ Blockly.ReplMgr.putYail = (function() {
     var webrtcisopen = false;
     var webrtcforcestop = false;
     // var iceservers = { 'iceServers' : [ { 'urls' : ['stun:stun.l.google.com:19302']}]};
-    var iceservers = { 'iceServers' : [ { 'urls' : ['turn:turn.appinventor.mit.edu:3478'],
-                                          'username' : 'oh',
-                                          'credential' : 'boy' }]};
+    var iceservers = {
+        'iceServers': [{
+            'urls': ['turn:turn.appinventor.mit.edu:3478'],
+            'username': 'oh',
+            'credential': 'boy'
+        }]
+    };
     var webrtcrendezvous = 'http://rendezvous.appinventor.mit.edu/rendezvous2/';
     var webrtcdata;
     var seennonce = {};
     var engine = {
         // Enqueue form for the phone
-        'putYail' : function(code, block, success, failure) {
+        'putYail': function (code, block, success, failure) {
             context = this;
             rs = top.ReplState;
             if (code === undefined) {      // This is a kludge. It lets us call putYail without args
@@ -294,10 +301,10 @@ Blockly.ReplMgr.putYail = (function() {
                 rs.phoneState.phoneQueue = [];
             }
             rs.phoneState.phoneQueue.push({
-                'code' : Blockly.ReplMgr.quoteUnicode(code), // Deal with unicode characters and kawa
-                'success' : success,
-                'failure' : failure,
-                'block' : block
+                'code': Blockly.ReplMgr.quoteUnicode(code), // Deal with unicode characters and kawa
+                'success': success,
+                'failure': failure,
+                'block': block
             });
             if (!rs.phoneState.ioRunning) {
                 rs.phoneState.ioRunning = true;
@@ -305,7 +312,7 @@ Blockly.ReplMgr.putYail = (function() {
             }
         },
         // putAsset: Like putYail but uses a different queue
-        'putAsset' : function(code, block, success, failure) {
+        'putAsset': function (code, block, success, failure) {
             rs = top.ReplState;
             if (rs === undefined || rs === null) {
                 console.log('putAsset: replState not set yet.');
@@ -321,17 +328,17 @@ Blockly.ReplMgr.putYail = (function() {
                 rs.phoneState.assetQueue = [];
             }
             rs.phoneState.assetQueue.push({
-                'code' : Blockly.ReplMgr.quoteUnicode(code), // Deal with unicode characters and kawa
-                'success' : success,
-                'failure' : failure,
-                'block' : block
+                'code': Blockly.ReplMgr.quoteUnicode(code), // Deal with unicode characters and kawa
+                'success': success,
+                'failure': failure,
+                'block': block
             });
             if (!rs.phoneState.ioRunning) {
                 rs.phoneState.ioRunning = true;
                 engine.pollphone(); // Trigger callback side
             }
         },
-        'webrtcstart' : function() {
+        'webrtcstart': function () {
             var RefreshAssets = top.AssetManager_refreshAssets;
             var offer;
             var key = rs.replcode;
@@ -339,14 +346,14 @@ Blockly.ReplMgr.putYail = (function() {
             webrtcisopen = false;
             webrtcforcestop = false;
             top.ConnectProgressBar_setProgress(20, Blockly.Msg.DIALOG_SECURE_ESTABLISHING);
-            var poll = function() {
+            var poll = function () {
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', webrtcrendezvous + key + '-r', true);
-                xhr.onreadystatechange = function() {
+                xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         if (this.response[0] == '[') {
                             var json = JSON.parse(this.response);
-                            for (var i = 0; i < json.length; i++ ){
+                            for (var i = 0; i < json.length; i++) {
                                 var hunk = json[i];
                                 var candidate = hunk['candidate'];
                                 offer = hunk['offer'];
@@ -375,7 +382,7 @@ Blockly.ReplMgr.putYail = (function() {
                 xhr.send();
             };
             webrtcpeer = new RTCPeerConnection(iceservers);
-            webrtcpeer.oniceconnectionstatechange = function(evt) {
+            webrtcpeer.oniceconnectionstatechange = function (evt) {
                 console.log("oniceconnectionstatechange: evt.type = " + evt.type);
                 if (this.iceConnectionState == "disconnected" ||
                     this.iceConnectionState == "failed") {
@@ -386,25 +393,27 @@ Blockly.ReplMgr.putYail = (function() {
                     webrtcpeer.close();
                 }
             };
-            webrtcpeer.onsignalingstatechange = function(evt) {
+            webrtcpeer.onsignalingstatechange = function (evt) {
                 console.log("onsignalingstatechange: evt.type = " + evt.type);
             };
-            webrtcpeer.onicecandidate = function(evt) {
+            webrtcpeer.onicecandidate = function (evt) {
                 if (evt.type == 'icecandidate') {
                     var xhr = new XMLHttpRequest();
                     xhr.open('POST', webrtcrendezvous, true);
-                    xhr.send(JSON.stringify({'key' : key + '-s',
-                                             'webrtc' : true,
-                                             'nonce' : Math.floor(Math.random() * 10000) + 1,
-                                             'candidate' : evt.candidate}));
+                    xhr.send(JSON.stringify({
+                        'key': key + '-s',
+                        'webrtc': true,
+                        'nonce': Math.floor(Math.random() * 10000) + 1,
+                        'candidate': evt.candidate
+                    }));
                 }
             };
             webrtcdata = webrtcpeer.createDataChannel('data');
-            webrtcdata.onopen = function() {
+            webrtcdata.onopen = function () {
                 webrtcisopen = true;
                 top.ConnectProgressBar_setProgress(30, Blockly.Msg.DIALOG_SECURE_ESTABLISHED);
                 console.log('webrtc data connection open!');
-                webrtcdata.onmessage = function(ev) {
+                webrtcdata.onmessage = function (ev) {
                     console.log("webrtc(onmessage): " + ev.data);
                     var json = goog.json.parse(ev.data);
                     if (json.status == 'OK') {
@@ -415,11 +424,11 @@ Blockly.ReplMgr.putYail = (function() {
                 webrtcrunning = true;
                 top.webrtcdata = webrtcdata; // For debugging
                 rs.dialog.hide();            // Take down QR Code dialog
-                RefreshAssets(function() {
+                RefreshAssets(function () {
                     Blockly.ReplMgr.loadExtensions();
                 });
             };
-            webrtcdata.onclose = function() {
+            webrtcdata.onclose = function () {
                 console.log("webrtc data closed");
                 webrtcdata = null;
                 webrtcstarting = false;
@@ -427,32 +436,34 @@ Blockly.ReplMgr.putYail = (function() {
                 webrtcpeer.close();
                 top.BlocklyPanel_indicateDisconnect();
             };
-            webrtcdata.onerror = function(err) {
+            webrtcdata.onerror = function (err) {
                 console.log("webrtc data error: " + err);
                 webrtcdata = null;
                 webrtcstarting = false;
                 webrtcrunning = false;
             };
-            webrtcpeer.createOffer().then(function(desc) {
+            webrtcpeer.createOffer().then(function (desc) {
                 offer = desc;
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', webrtcrendezvous, true);
-                xhr.send(JSON.stringify({'key' : key + '-s',
-                                         'webrtc' : true,
-                                         'offer' : desc}));
+                xhr.send(JSON.stringify({
+                    'key': key + '-s',
+                    'webrtc': true,
+                    'offer': desc
+                }));
                 webrtcpeer.setLocalDescription(desc);
             });
             poll();
 
         },
-        'chunker' : (function() {
+        'chunker': (function () {
             var seq = 0;
-            var gensym = function() {
+            var gensym = function () {
                 seq += 1;
                 return 'Q' + seq;
             };
 
-            var chunker = function(input) {
+            var chunker = function (input) {
                 var length = input.length;
                 var chunklen = 15000; // purposely smaller then 16K because we
                 if (length <= chunklen) { // add overhead
@@ -468,7 +479,7 @@ Blockly.ReplMgr.putYail = (function() {
                 var symbol = gensym();
                 var retval = [];
                 retval.push('(define ' + symbol + ' "")');
-                chunks.forEach(function(item, index) {
+                chunks.forEach(function (item, index) {
                     item = item.replace(/\\/g, '\\\\');
                     item = item.replace(/"/g, '\\"');
                     var code = '(set! ' + symbol + ' (string-append ' + symbol + ' "' + item + '"))';
@@ -480,7 +491,7 @@ Blockly.ReplMgr.putYail = (function() {
             };
             return (chunker);
         })(),
-        'pollphone' : function() {
+        'pollphone': function () {
             if (!rs.didversioncheck) {
                 engine.doversioncheck();
                 return;
@@ -523,7 +534,7 @@ Blockly.ReplMgr.putYail = (function() {
                     // sendcode is now an array of strings, also scheme
                     // code, but guaranteed that each will fit in a
                     // webrtc message
-                    sendcode.forEach(function(item) {
+                    sendcode.forEach(function (item) {
                         console.log('Chunk: ' + item);
                         webrtcdata.send(item);
                     });
@@ -543,7 +554,7 @@ Blockly.ReplMgr.putYail = (function() {
                         // sendcode is now an array of strings, also scheme
                         // code, but guaranteed that each will fit in a
                         // webrtc message
-                        sendcode.forEach(function(item) {
+                        sendcode.forEach(function (item) {
                             console.log('Chunk: ' + item);
                             webrtcdata.send(item);
                         });
@@ -574,11 +585,12 @@ Blockly.ReplMgr.putYail = (function() {
                     rs.phoneState.ioRunning = false;
                     return;
                 }
-                work = { 'code' : allcode,
-                         'block' : null,   // We cannot link this large code block
-                                           // to any particular block (yet)
-                         'chunking' : true // indicate we are chunking...
-                       };
+                work = {
+                    'code': allcode,
+                    'block': null,   // We cannot link this large code block
+                                     // to any particular block (yet)
+                    'chunking': true // indicate we are chunking...
+                };
                 if (chunked) {
                     console.log("Chunk: " + allcode);
                 } else {
@@ -607,7 +619,7 @@ Blockly.ReplMgr.putYail = (function() {
             }
 
             conn.open('POST', rs.url, true);
-            conn.onreadystatechange = function() {
+            conn.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
                     var json = goog.json.parse(this.response);
                     if (json.status != 'OK') {
@@ -628,7 +640,7 @@ Blockly.ReplMgr.putYail = (function() {
                             work.failure(Blockly.Msg.REPL_NETWORK_CONNECTION_ERROR);
                         }
                         var dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_NETWORK_ERROR, Blockly.Msg.REPL_NETWORK_ERROR_RESTART, Blockly.Msg.REPL_OK, false, null, 0,
-                            function() {
+                            function () {
                                 dialog.hide();
                                 context.hardreset(context.formName);
                             });
@@ -644,10 +656,10 @@ Blockly.ReplMgr.putYail = (function() {
             var stuff = encoder.toString();
             conn.send(stuff);
         },
-        'doversioncheck' : function() {
+        'doversioncheck': function () {
             var conn = goog.net.XmlHttp();
             conn.open('GET', rs.versionurl, true);
-            conn.onreadystatechange = function() {
+            conn.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
                     rs.didversioncheck = true;
                     if (this.response[0] != "{") {
@@ -661,10 +673,10 @@ Blockly.ReplMgr.putYail = (function() {
                         // a Companion older then the version that supplies its package name
                         if ((rs.replcode != 'emulator') && !Blockly.ReplMgr.acceptablePackage(json["package"])) {
                             dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_COMPANION_VERSION_CHECK,
-                                                             Blockly.Msg.REPL_COMPANION_WRONG_PACKAGE,
-                                                             Blockly.Msg.REPL_OK, false, null, 0, function() {
-                                                                 dialog.hide();
-                                                             });
+                                Blockly.Msg.REPL_COMPANION_WRONG_PACKAGE,
+                                Blockly.Msg.REPL_OK, false, null, 0, function () {
+                                    dialog.hide();
+                                });
                             engine.resetcompanion();
                             return;
                         }
@@ -695,7 +707,7 @@ Blockly.ReplMgr.putYail = (function() {
                     return;
                 }
                 if (this.readyState == 4) { // Old Companion, doesn't do CORS so we fail to talk to it
-                    var dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_NETWORK_ERROR, Blockly.Msg.REPL_NETWORK_ERROR_RESTART, Blockly.Msg.REPL_OK, false, null, 0, function() {
+                    var dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_NETWORK_ERROR, Blockly.Msg.REPL_NETWORK_ERROR_RESTART, Blockly.Msg.REPL_OK, false, null, 0, function () {
                         dialog.hide();
                     });
                     engine.resetcompanion();
@@ -704,12 +716,12 @@ Blockly.ReplMgr.putYail = (function() {
             };
             conn.send();
         },
-        "receivefromphone" : function() {
+        "receivefromphone": function () {
             phonereceiving = true;
             console.log("receivefromphone called.");
             rxhr = goog.net.XmlHttp();
             rxhr.open('POST', rs.rurl, true); // We post to avoid caching issues
-            rxhr.onreadystatechange = function() {
+            rxhr.onreadystatechange = function () {
                 if (this.readyState != 4) return;
                 console.log("receivefromphone returned.");
                 if (this.status == 200) {
@@ -722,7 +734,7 @@ Blockly.ReplMgr.putYail = (function() {
             };
             rxhr.send("IGNORED=STUFF");
         },
-        "reset" : function() {
+        "reset": function () {
             if (top.usewebrtc) {
                 if (webrtcdata) {
                     webrtcdata.close();
@@ -742,7 +754,7 @@ Blockly.ReplMgr.putYail = (function() {
             top.usewebrtc = false;
             phonereceiving = false;
         },
-        "resetcompanion" : function() {
+        "resetcompanion": function () {
             console.log("reseting companion");
             rs.state = Blockly.ReplMgr.rsState.IDLE;
             rs.connection = null;
@@ -754,7 +766,7 @@ Blockly.ReplMgr.putYail = (function() {
             top.BlocklyPanel_indicateDisconnect();
             engine.reset();
         },
-        "checkversionupgrade" : function(fatal, installer, force) {
+        "checkversionupgrade": function (fatal, installer, force) {
             var dialog;
             var cancelButton;
             if (force) {
@@ -767,20 +779,24 @@ Blockly.ReplMgr.putYail = (function() {
             if (installer != "com.android.vending" && top.COMPANION_UPDATE_URL) {
                 var emulator = (rs.replcode == 'emulator'); // Kludgey way to tell
                 dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_COMPANION_VERSION_CHECK,
-                                                    Blockly.Msg.REPL_COMPANION_OUT_OF_DATE + (emulator?Blockly.Msg.REPL_EMULATORS:Blockly.Msg.REPL_DEVICES) + Blockly.Msg.REPL_APPROVE_UPDATE,
-                                                        Blockly.Msg.REPL_OK, false, cancelButton, 0, function(response) {
-                    dialog.hide();
-                    if (response != Blockly.Msg.REPL_NOT_NOW) {
-                        context.triggerUpdate();
-                    } else {
-                        engine.pollphone();
-                    }
-                });
+                    Blockly.Msg.REPL_COMPANION_OUT_OF_DATE + (emulator ? Blockly.Msg.REPL_EMULATORS : Blockly.Msg.REPL_DEVICES) + Blockly.Msg.REPL_APPROVE_UPDATE,
+                    Blockly.Msg.REPL_OK, false, cancelButton, 0, function (response) {
+                        dialog.hide();
+                        if (response != Blockly.Msg.REPL_NOT_NOW) {
+                            context.triggerUpdate();
+                        } else {
+                            engine.pollphone();
+                        }
+                    });
             } else if (fatal) {
-                dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_COMPANION_VERSION_CHECK, Blockly.Msg.REPL_COMPANION_OUT_OF_DATE1 + top.PREFERRED_COMPANION, Blockly.Msg.REPL_OK, false, null, 0, function() { dialog.hide();});
+                dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_COMPANION_VERSION_CHECK, Blockly.Msg.REPL_COMPANION_OUT_OF_DATE1 + top.PREFERRED_COMPANION, Blockly.Msg.REPL_OK, false, null, 0, function () {
+                    dialog.hide();
+                });
                 engine.resetcompanion();
             } else {
-                dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_COMPANION_VERSION_CHECK, Blockly.Msg.REPL_COMPANION_OUT_OF_DATE_IMMEDIATE, Blockly.Msg.REPL_DISMISS, false, null, 1, function() { dialog.hide();});
+                dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_COMPANION_VERSION_CHECK, Blockly.Msg.REPL_COMPANION_OUT_OF_DATE_IMMEDIATE, Blockly.Msg.REPL_DISMISS, false, null, 1, function () {
+                    dialog.hide();
+                });
                 engine.pollphone();
             }
         }
@@ -794,7 +810,7 @@ Blockly.ReplMgr.putYail = (function() {
 // an update-able Companion and we have a path to update it from. Otherwise
 // we are never called and the user is given a message that their Companion
 // is out of date.
-Blockly.ReplMgr.triggerUpdate = function() {
+Blockly.ReplMgr.triggerUpdate = function () {
     var rs = top.ReplState;
     var fetchconn = goog.net.XmlHttp();
     var encoder = new goog.Uri.QueryData();
@@ -804,7 +820,7 @@ Blockly.ReplMgr.triggerUpdate = function() {
 
     var dialog = null;
     var okbuttonshowing = false;
-    var showdialog = function(OkButton, message) {
+    var showdialog = function (OkButton, message) {
         if (dialog) {
             if (!!OkButton != okbuttonshowing) { // The !! construct turns OkButton into a boolean
                 dialog.hide();
@@ -816,7 +832,9 @@ Blockly.ReplMgr.triggerUpdate = function() {
         } else {
             if (OkButton) {
                 dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_SOFTWARE_UPDATE, message, OkButton, false, null, 0,
-                                                    function() { dialog.hide();});
+                    function () {
+                        dialog.hide();
+                    });
                 okbuttonshowing = true;
             } else {
                 dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_SOFTWARE_UPDATE, message, null, false, null, 0, undefined);
@@ -825,7 +843,7 @@ Blockly.ReplMgr.triggerUpdate = function() {
             }
         }
     };
-    var hidedialog = function() {
+    var hidedialog = function () {
         if (dialog) {
             dialog.hide();
         }
@@ -833,7 +851,7 @@ Blockly.ReplMgr.triggerUpdate = function() {
 
     // End of Dialog management code
 
-    var reset = function() {
+    var reset = function () {
         // Reset companion state
         rs.state = Blockly.ReplMgr.rsState.IDLE;
         rs.connection = null;
@@ -843,7 +861,7 @@ Blockly.ReplMgr.triggerUpdate = function() {
         // End reset companion state
     };
 
-    var fail = function(message) {
+    var fail = function (message) {
         showdialog(Blockly.Msg.REPL_OK_LOWER, message);
         reset();
     };
@@ -859,7 +877,7 @@ Blockly.ReplMgr.triggerUpdate = function() {
     }
 
     if (top.usewebrtc) {        // If we are using webrtc, we just ask the Companion to do the
-                                // work directly.
+        // work directly.
         var cookie = this.getCookie();
         var yail = "(AssetFetcher:upgradeCompanion \"" + cookie + "\" \"" +
             top.COMPANION_UPDATE_URL + "\")";
@@ -869,30 +887,30 @@ Blockly.ReplMgr.triggerUpdate = function() {
         encoder.add('package', 'update.apk');
         var qs = encoder.toString();
         fetchconn.open("GET", top.COMPANION_UPDATE_EMULATOR_URL, true);
-        fetchconn.onreadystatechange = function() {
+        fetchconn.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 try {
                     showdialog(Blockly.Msg.REPL_GOT_IT, Blockly.Msg.REPL_UPDATE_INFO);
                     Blockly.ReplMgr.putAsset(0, "update.apk", goog.crypt.base64.decodeStringToByteArray(this.response),
-                                             function() {
-                                                 // Trigger Update Here
-                                                 console.log("Update: Downloaded");
-                                                 var conn = goog.net.XmlHttp();
-                                                 conn.open("POST", rs.baseurl + "_package", true);
-                                                 conn.onreadystatechange = function() {
-                                                     if (this.readyState == 4 && this.status == 200) {
-                                                         console.log("Update: _package success");
-                                                         reset(); //  New companion, no connection left!
-                                                     } else if (this.readyState == 4) {
-                                                         console.log("Update: _package state = 4 probably ok");
-                                                         reset();
-                                                     }
-                                                 };
-                                                 conn.send(qs);
-                                             },
-                                             function() {
-                                                 fail(Blockly.Msg.REPL_UNABLE_TO_UPDATE);
-                                             }, true);
+                        function () {
+                            // Trigger Update Here
+                            console.log("Update: Downloaded");
+                            var conn = goog.net.XmlHttp();
+                            conn.open("POST", rs.baseurl + "_package", true);
+                            conn.onreadystatechange = function () {
+                                if (this.readyState == 4 && this.status == 200) {
+                                    console.log("Update: _package success");
+                                    reset(); //  New companion, no connection left!
+                                } else if (this.readyState == 4) {
+                                    console.log("Update: _package state = 4 probably ok");
+                                    reset();
+                                }
+                            };
+                            conn.send(qs);
+                        },
+                        function () {
+                            fail(Blockly.Msg.REPL_UNABLE_TO_UPDATE);
+                        }, true);
                 } catch (err) {     // Most likely a decoding error from goog.crypt.base64...
                     fail(Blockly.Msg.REPL_UNABLE_TO_LOAD);
                 }
@@ -905,7 +923,7 @@ Blockly.ReplMgr.triggerUpdate = function() {
     }
 };
 
-Blockly.ReplMgr.acceptablePackage = function(comppack) {
+Blockly.ReplMgr.acceptablePackage = function (comppack) {
     if (comppack == top.ACCEPTABLE_COMPANION_PACKAGE) {
         return true;
     } else {
@@ -913,7 +931,7 @@ Blockly.ReplMgr.acceptablePackage = function(comppack) {
     }
 };
 
-Blockly.ReplMgr.acceptableVersion = function(version) {
+Blockly.ReplMgr.acceptableVersion = function (version) {
     for (var i = 0; i < top.ACCEPTABLE_COMPANIONS.length; i++) {
         if (top.ACCEPTABLE_COMPANIONS[i] == version) {
             return true;
@@ -922,11 +940,11 @@ Blockly.ReplMgr.acceptableVersion = function(version) {
     return false;
 };
 
-Blockly.ReplMgr.processRetvals = function(responses) {
+Blockly.ReplMgr.processRetvals = function (responses) {
     var rs = top.ReplState;
     var block;
     var context = this;
-    var runtimeerr = function(message) {
+    var runtimeerr = function (message) {
         if (!context.runtimeError) {
             context.runtimeError = new goog.ui.Dialog(null, true, new goog.dom.DomHelper(top.document));
             var dialogElement = context.runtimeError.getDialogElement();
@@ -940,8 +958,7 @@ Blockly.ReplMgr.processRetvals = function(responses) {
             context.runtimeError.setVisible(false);
         }
         context.runtimeError.setTitle(Blockly.Msg.REPL_RUNTIME_ERROR);
-        context.runtimeError.setButtonSet(new goog.ui.Dialog.ButtonSet().
-                                       addButton({caption:Blockly.Msg.REPL_DISMISS}, false, true));
+        context.runtimeError.setButtonSet(new goog.ui.Dialog.ButtonSet().addButton({caption: Blockly.Msg.REPL_DISMISS}, false, true));
         if (context.runtimeError.getContentElement()) {
             // This is not condoned by Google Closure Library rules, but we have already escaped
             // the return value and the static content should be code reviewed to be safe.
@@ -955,84 +972,84 @@ Blockly.ReplMgr.processRetvals = function(responses) {
     };
     // From http://forums.asp.net/t/1151879.aspx?HttpUtility+HtmlEncode+in+javaScript+
     var escapeHTML = function (str) {
-      var div = document.createElement('div');
-      var text = document.createTextNode(str);
-      div.appendChild(text);
-      return div.innerHTML;
+        var div = document.createElement('div');
+        var text = document.createTextNode(str);
+        div.appendChild(text);
+        return div.innerHTML;
     };
 
     for (var i = 0; i < responses.length; i++) {
         var r = responses[i];
         console.log("processRetVals: " + JSON.stringify(r));
-        switch(r.type) {
-        case "return":
-            if (r.status == "OK" && top.loadAllErrorCount > 0) {
-                console.log("Error Countdown: " + top.loadAllErrorCount);
-                top.loadAllErrorCount -= 1;
-                if (top.loadAllErrorCount <= 0) {
-                    top.loadAllErrorCount = 0; // Make sure!
-                    top.loadAll = true;
-                    console.log("Reseting top.loadAll to true");
-                }
-            }
-            if (r.blockid == "-2" && r.status != "OK") {
-                // We had an error in initial form load or at another
-                // time when we were chunking forms together
-                top.loadAll = false;
-                // This was 20, but for large projects it lead to infinite loops trying to
-                // find an error if the error occurs below a top level block at index > 20.
-                top.loadAllErrorCount = Blockly.mainWorkspace.getTopBlocks().length;
-                console.log("Error in chunking, disabling.");
-                this.resetYail(true);
-                this.pollYail(Blockly.mainWorkspace);
-            } else if (r.blockid != "-1" && r.blockid != "-2") {
-                block = Blockly.mainWorkspace.getBlockById(r.blockid);
-                if (block === null) {
-                    break;      // This happens when we switch screens during a poll
-                }
-                if (r.status == "OK") {
-                    block.replError = null;
-                    if (r.value && (r.value != '*nothing*')) {
-                        this.setDoitResult(block, r.value);
+        switch (r.type) {
+            case "return":
+                if (r.status == "OK" && top.loadAllErrorCount > 0) {
+                    console.log("Error Countdown: " + top.loadAllErrorCount);
+                    top.loadAllErrorCount -= 1;
+                    if (top.loadAllErrorCount <= 0) {
+                        top.loadAllErrorCount = 0; // Make sure!
+                        top.loadAll = true;
+                        console.log("Reseting top.loadAll to true");
                     }
-                } else {
-                    if (r.value) {
-                        block.replError = Blockly.Msg.REPL_ERROR_FROM_COMPANION + ": " + r.value;
+                }
+                if (r.blockid == "-2" && r.status != "OK") {
+                    // We had an error in initial form load or at another
+                    // time when we were chunking forms together
+                    top.loadAll = false;
+                    // This was 20, but for large projects it lead to infinite loops trying to
+                    // find an error if the error occurs below a top level block at index > 20.
+                    top.loadAllErrorCount = Blockly.mainWorkspace.getTopBlocks().length;
+                    console.log("Error in chunking, disabling.");
+                    this.resetYail(true);
+                    this.pollYail(Blockly.mainWorkspace);
+                } else if (r.blockid != "-1" && r.blockid != "-2") {
+                    block = Blockly.mainWorkspace.getBlockById(r.blockid);
+                    if (block === null) {
+                        break;      // This happens when we switch screens during a poll
+                    }
+                    if (r.status == "OK") {
+                        block.replError = null;
+                        if (r.value && (r.value != '*nothing*')) {
+                            this.setDoitResult(block, r.value);
+                        }
                     } else {
-                        block.replError = "Error from Companion";
+                        if (r.value) {
+                            block.replError = Blockly.Msg.REPL_ERROR_FROM_COMPANION + ": " + r.value;
+                        } else {
+                            block.replError = "Error from Companion";
+                        }
                     }
+                } else if (r.status != "OK") {
+                    runtimeerr(Blockly.Msg.REPL_ERROR_FROM_COMPANION + ": " + r.value);
                 }
-            } else if (r.status != "OK") {
-                runtimeerr(Blockly.Msg.REPL_ERROR_FROM_COMPANION + ": " + r.value);
-            }
-            break;
-        case "pushScreen":
-            var success = top.BlocklyPanel_pushScreen(r.screen);
-            if (!success) {
-                console.log("processRetVals: Invalid Screen: " + r.screen);
-                runtimeerr("Invalid Screen: " + r.screen);
-            }
-            break;
-        case "popScreen":
-            top.BlocklyPanel_popScreen();
-            break;
-        case "assetTransferred":
-            top.AssetManager_markAssetTransferred(r.value);
-            break;
-        case "extensionsLoaded":
-            rs.state = Blockly.ReplMgr.rsState.CONNECTED;
-            Blockly.mainWorkspace.fireChangeListener(new AI.Events.CompanionConnect());
-            break;
-        case "error":
-            console.log("processRetVals: Error value = " + r.value);
-            runtimeerr(escapeHTML(r.value) + Blockly.Msg.REPL_NO_ERROR_FIVE_SECONDS);
+                break;
+            case "pushScreen":
+                var success = top.BlocklyPanel_pushScreen(r.screen);
+                if (!success) {
+                    console.log("processRetVals: Invalid Screen: " + r.screen);
+                    runtimeerr("Invalid Screen: " + r.screen);
+                }
+                break;
+            case "popScreen":
+                top.BlocklyPanel_popScreen();
+                break;
+            case "assetTransferred":
+                top.AssetManager_markAssetTransferred(r.value);
+                break;
+            case "extensionsLoaded":
+                rs.state = Blockly.ReplMgr.rsState.CONNECTED;
+                Blockly.mainWorkspace.fireChangeListener(new AI.Events.CompanionConnect());
+                break;
+            case "error":
+                console.log("processRetVals: Error value = " + r.value);
+                runtimeerr(escapeHTML(r.value) + Blockly.Msg.REPL_NO_ERROR_FIVE_SECONDS);
         }
     }
     var handler = Blockly.getMainWorkspace().getWarningHandler();
     handler && handler.checkAllBlocksForWarningsAndErrors();
 };
 
-Blockly.ReplMgr.setDoitResult = function(block, value) {
+Blockly.ReplMgr.setDoitResult = function (block, value) {
     var patt = /Do It Result:.*?\n---\n/m;
     var comment = "";
     var result = 'Do It Result: ' + value + '\n---\n';
@@ -1057,7 +1074,7 @@ Blockly.ReplMgr.setDoitResult = function(block, value) {
     block.comment.setVisible(true);
 };
 
-Blockly.ReplMgr.startAdbDevice = function(rs, usb) {
+Blockly.ReplMgr.startAdbDevice = function (rs, usb) {
     var first = true;
     var context = this;
     var counter = 0;            // Used to for counting down
@@ -1077,7 +1094,7 @@ Blockly.ReplMgr.startAdbDevice = function(rs, usb) {
     } else {
         message = Blockly.Msg.REPL_STARTING_EMULATOR;
     }
-    progdialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_CONNECTING, message, Blockly.Msg.REPL_CANCEL, false, null, 0, function() {
+    progdialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_CONNECTING, message, Blockly.Msg.REPL_CANCEL, false, null, 0, function () {
         progdialog.hide();
         clearInterval(interval);
         top.ReplState.state = Blockly.ReplMgr.rsState.IDLE;
@@ -1087,11 +1104,11 @@ Blockly.ReplMgr.startAdbDevice = function(rs, usb) {
             dialog = null;
         }
     });
-    var timeout = function() {
+    var timeout = function () {
         clearInterval(interval);    // Stop polling
         var giveupButton = Blockly.Msg.REPL_GIVE_UP;
         var keepgoingButton = Blockly.Msg.REPL_KEEP_TRYING;
-        dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_CONNECTION_FAILURE1, Blockly.Msg.REPL_NO_START_EMULATOR, giveupButton, false, keepgoingButton, 0, function(response) {
+        dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_CONNECTION_FAILURE1, Blockly.Msg.REPL_NO_START_EMULATOR, giveupButton, false, keepgoingButton, 0, function (response) {
             dialog.hide();
             dialog = null;
             if (response == giveupButton) {
@@ -1117,138 +1134,141 @@ Blockly.ReplMgr.startAdbDevice = function(rs, usb) {
     // 1 == Counting down after emulator started
     // 2 == Counting down after repl start requested
     // 3 == Done (nothing to do), interval should be cleared
-    var mainloop = function() {
+    var mainloop = function () {
         var xhr;
         var RefreshAssets = top.AssetManager_refreshAssets;
-        switch(pc) {
-        case 0:
-            xhr = goog.net.XmlHttp();
-            xhr.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    var result = goog.json.parse(this.response);
-                    if (result.status == "OK") { // We're running!
-                        device = result.device;    // the device we are going to talk to
-                        console.log("ReplMgr: set device = " + device);
-                        pc = 1;                    // Next State
-                        if (usb) {
-                            counter = 6;               // Wait five seconds for usb
-                        } else {
-                            counter = 21;              // Wait twenty seconds for the emulator
-                        }
-                        if (udialog) {             // Get rid of dialog he/she plugged in the cable!
-                            udialog.hide();
-                            udialog = null;
-                        }
-                    } else {
-                        if (first && !usb) { // Need to actually start the thing!
-                            var xhr = goog.net.XmlHttp();
-                            xhr.open("GET", "http://localhost:8004/start/", true); // We don't look at the response
-                            xhr.send();
-                            first = false;
-                        } else if (first) { // USB
-                            udialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_PLUGGED_IN_Q, Blockly.Msg.REPL_AI_NO_SEE_DEVICE, Blockly.Msg.REPL_OK, false, null, 0, function() { udialog.hide(); udialog = null;});
-                            first = false;
-                        }
-                    }
-                } else if (this.readyState == 4) {
-                    // readyState is 4 but status isn't 200 is daemon running?
-                    clearInterval(interval);
-                    if (progdialog) {
-                        progdialog.hide();
-                        progdialog = null;
-                    }
-                    if (!dialog) {
-                        top.BlocklyPanel_indicateDisconnect();
-                        dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_HELPER_Q, Blockly.Msg.REPL_HELPER_NOT_RUNNING, Blockly.Msg.REPL_OK, false, null, 0, function() {
-                            dialog.hide();
-                            dialog = null;
-                            if (progdialog) {
-                                progdialog.hide();
-                                progdialog = null;
-                            }
-                            top.ReplState.state = Blockly.ReplMgr.rsState.IDLE;
-                        });
-                    }
-                }
-            };
-            if (usb) {
-                xhr.open("GET", "http://localhost:8004/ucheck/", true);
-            } else {
-                xhr.open("GET", "http://localhost:8004/echeck/", true);
-            }
-            xhr.send();
-            break;
-        case 1:
-            counter -= 1;
-            if (usb) {
-                progdialog.setContent(Blockly.Msg.REPL_USB_CONNECTED_WAIT + counter + Blockly.Msg.REPL_SECONDS_ENSURE_RUNNING);
-            } else {
-                progdialog.setContent(Blockly.Msg.REPL_EMULATOR_STARTED + counter + Blockly.Msg.REPL_SECONDS_ENSURE_RUNNING);
-            }
-            if (counter <= 0) {
-                if (usb) {
-                    progdialog.setContent(Blockly.Msg.REPL_STARTING_COMPANION_ON_PHONE);
-                } else {
-                    progdialog.setContent(Blockly.Msg.REPL_STARTING_COMPANION_IN_EMULATOR);
-                }
-                pc = 2;
-                counter = 10;
-                ubercounter = 0;
+        switch (pc) {
+            case 0:
                 xhr = goog.net.XmlHttp();
-                xhr.open("GET", "http://localhost:8004/replstart/" + device, true); // Don't look at response
-                xhr.send();
-            }
-            break;
-        case 2:
-            counter -= 1;
-            if (counter > 0) {
-                progdialog.setContent(Blockly.Msg.REPL_COMPANION_STARTED_WAITING + counter + Blockly.Msg.REPL_SECONDS_ENSURE_RUNNING);
-            } else {
-                progdialog.setContent(Blockly.Msg.REPL_VERIFYING_COMPANION);
-                xhr = goog.net.XmlHttp();
-                xhr.timeout = 4000; // 4 seconds
-                xhr.open("GET", rs.versionurl, true);
-                xhr.onreadystatechange = function() {
-                    if (this.readyState == 4) {
-                        if (this.status == 200) {
-                            pc = 4; // We got a response!
-                            return;
-                        } else {
-                            ubercounter += 1;
-                            if (ubercounter > ubergiveup) { // It's never going to work!
-                                timeout();
+                xhr.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var result = goog.json.parse(this.response);
+                        if (result.status == "OK") { // We're running!
+                            device = result.device;    // the device we are going to talk to
+                            console.log("ReplMgr: set device = " + device);
+                            pc = 1;                    // Next State
+                            if (usb) {
+                                counter = 6;               // Wait five seconds for usb
                             } else {
-                                // We didn't work yet, kick it again and add some time and go back to state 2
-                                xhr = goog.net.XmlHttp();
-                                xhr.open("GET", "http://localhost:8004/replstart/" + device, true); // Don't look at response
-                                xhr.send();
-                                counter = 10; // Wait 10 more seconds
-                                pc = 2;
+                                counter = 21;              // Wait twenty seconds for the emulator
                             }
+                            if (udialog) {             // Get rid of dialog he/she plugged in the cable!
+                                udialog.hide();
+                                udialog = null;
+                            }
+                        } else {
+                            if (first && !usb) { // Need to actually start the thing!
+                                var xhr = goog.net.XmlHttp();
+                                xhr.open("GET", "http://localhost:8004/start/", true); // We don't look at the response
+                                xhr.send();
+                                first = false;
+                            } else if (first) { // USB
+                                udialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_PLUGGED_IN_Q, Blockly.Msg.REPL_AI_NO_SEE_DEVICE, Blockly.Msg.REPL_OK, false, null, 0, function () {
+                                    udialog.hide();
+                                    udialog = null;
+                                });
+                                first = false;
+                            }
+                        }
+                    } else if (this.readyState == 4) {
+                        // readyState is 4 but status isn't 200 is daemon running?
+                        clearInterval(interval);
+                        if (progdialog) {
+                            progdialog.hide();
+                            progdialog = null;
+                        }
+                        if (!dialog) {
+                            top.BlocklyPanel_indicateDisconnect();
+                            dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_HELPER_Q, Blockly.Msg.REPL_HELPER_NOT_RUNNING, Blockly.Msg.REPL_OK, false, null, 0, function () {
+                                dialog.hide();
+                                dialog = null;
+                                if (progdialog) {
+                                    progdialog.hide();
+                                    progdialog = null;
+                                }
+                                top.ReplState.state = Blockly.ReplMgr.rsState.IDLE;
+                            });
                         }
                     }
                 };
+                if (usb) {
+                    xhr.open("GET", "http://localhost:8004/ucheck/", true);
+                } else {
+                    xhr.open("GET", "http://localhost:8004/echeck/", true);
+                }
                 xhr.send();
-                pc = 3;
-            }
-            break;
-        case 3:
-            break;              // We don't do anything in this state
-                                // we are waiting for the version check (noop) to finish
-        case 4:
-            progdialog.hide();
-            rs.state = context.rsState.ASSET; // Indicate that we are connected, start loading assets
-            clearInterval(interval);
-            RefreshAssets(function() {
-                Blockly.ReplMgr.loadExtensions();
-            });
+                break;
+            case 1:
+                counter -= 1;
+                if (usb) {
+                    progdialog.setContent(Blockly.Msg.REPL_USB_CONNECTED_WAIT + counter + Blockly.Msg.REPL_SECONDS_ENSURE_RUNNING);
+                } else {
+                    progdialog.setContent(Blockly.Msg.REPL_EMULATOR_STARTED + counter + Blockly.Msg.REPL_SECONDS_ENSURE_RUNNING);
+                }
+                if (counter <= 0) {
+                    if (usb) {
+                        progdialog.setContent(Blockly.Msg.REPL_STARTING_COMPANION_ON_PHONE);
+                    } else {
+                        progdialog.setContent(Blockly.Msg.REPL_STARTING_COMPANION_IN_EMULATOR);
+                    }
+                    pc = 2;
+                    counter = 10;
+                    ubercounter = 0;
+                    xhr = goog.net.XmlHttp();
+                    xhr.open("GET", "http://localhost:8004/replstart/" + device, true); // Don't look at response
+                    xhr.send();
+                }
+                break;
+            case 2:
+                counter -= 1;
+                if (counter > 0) {
+                    progdialog.setContent(Blockly.Msg.REPL_COMPANION_STARTED_WAITING + counter + Blockly.Msg.REPL_SECONDS_ENSURE_RUNNING);
+                } else {
+                    progdialog.setContent(Blockly.Msg.REPL_VERIFYING_COMPANION);
+                    xhr = goog.net.XmlHttp();
+                    xhr.timeout = 4000; // 4 seconds
+                    xhr.open("GET", rs.versionurl, true);
+                    xhr.onreadystatechange = function () {
+                        if (this.readyState == 4) {
+                            if (this.status == 200) {
+                                pc = 4; // We got a response!
+                                return;
+                            } else {
+                                ubercounter += 1;
+                                if (ubercounter > ubergiveup) { // It's never going to work!
+                                    timeout();
+                                } else {
+                                    // We didn't work yet, kick it again and add some time and go back to state 2
+                                    xhr = goog.net.XmlHttp();
+                                    xhr.open("GET", "http://localhost:8004/replstart/" + device, true); // Don't look at response
+                                    xhr.send();
+                                    counter = 10; // Wait 10 more seconds
+                                    pc = 2;
+                                }
+                            }
+                        }
+                    };
+                    xhr.send();
+                    pc = 3;
+                }
+                break;
+            case 3:
+                break;              // We don't do anything in this state
+                                    // we are waiting for the version check (noop) to finish
+            case 4:
+                progdialog.hide();
+                rs.state = context.rsState.ASSET; // Indicate that we are connected, start loading assets
+                clearInterval(interval);
+                RefreshAssets(function () {
+                    Blockly.ReplMgr.loadExtensions();
+                });
         }
     };
     interval = setInterval(mainloop, 1000); // Once per second
 };
 
 // Convert non-ASCII Characters to kawa unicode escape
-Blockly.ReplMgr.quoteUnicode = function(input) {
+Blockly.ReplMgr.quoteUnicode = function (input) {
     if (!input)
         return null;
     var sb = [];
@@ -1256,7 +1276,7 @@ Blockly.ReplMgr.quoteUnicode = function(input) {
     for (var i = 0; i < len; i++) {
         var u = input.charCodeAt(i); // Unicode of the character
         if (u < ' '.charCodeAt(0) || u > '~'.charCodeAt(0)) {
-          // Replace any special chars with \u1234 unicode
+            // Replace any special chars with \u1234 unicode
             if (u == 10) {      // Don't encode newlines
                 sb.push(input.charAt(i));
             } else {
@@ -1271,7 +1291,7 @@ Blockly.ReplMgr.quoteUnicode = function(input) {
     return sb.join("");
 };
 
-Blockly.ReplMgr.startRepl = function(already, emulator, usb) {
+Blockly.ReplMgr.startRepl = function (already, emulator, usb) {
     var rs = top.ReplState;
     var me = this;
     rs.didversioncheck = false; // Re-check
@@ -1301,7 +1321,7 @@ Blockly.ReplMgr.startRepl = function(already, emulator, usb) {
         rs.rendezvouscode = this.sha1(rs.replcode);
         rs.seq_count = 1;          // used for the creating the hmac mac
         rs.count = 0;
-        rs.dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_CONNECT_TO_COMPANION, this.makeDialogMessage(rs.replcode), Blockly.Msg.REPL_CANCEL, false, null, 1, function() {
+        rs.dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_CONNECT_TO_COMPANION, this.makeDialogMessage(rs.replcode), Blockly.Msg.REPL_CANCEL, false, null, 1, function () {
             rs.dialog.hide();
             rs.state = Blockly.ReplMgr.rsState.IDLE; // We're punting
             rs.connection = null;
@@ -1325,16 +1345,16 @@ Blockly.ReplMgr.startRepl = function(already, emulator, usb) {
     }
 };
 
-Blockly.ReplMgr.genCode = function() {
+Blockly.ReplMgr.genCode = function () {
     var retval = '';
     for (var i = 0; i < 6; i++) {
-        retval = retval + String.fromCharCode(Math.floor(Math.random()*26) + 97);
+        retval = retval + String.fromCharCode(Math.floor(Math.random() * 26) + 97);
     }
     return retval;
 };
 
 // Request ipAddress information from the Rendezvous Server
-Blockly.ReplMgr.getFromRendezvous = function() {
+Blockly.ReplMgr.getFromRendezvous = function () {
     var me = this;
     var xmlhttp = goog.net.XmlHttp();
     if (top.ReplState === undefined || top.ReplState === null) {
@@ -1344,11 +1364,11 @@ Blockly.ReplMgr.getFromRendezvous = function() {
     var rs = top.ReplState;
     var context = this;
     var RefreshAssets = top.AssetManager_refreshAssets; // This is where GWT puts this
-    var poller = function() {                                     // So "this" is correct when called
+    var poller = function () {                                     // So "this" is correct when called
         context.rendPoll.call(context);                           // from setTimeout
     };
     xmlhttp.open('GET', 'http://' + top.rendezvousServer + '/rendezvous/' + rs.rendezvouscode, true);
-    xmlhttp.onreadystatechange = function() {
+    xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && this.status == 200) {
             try {
                 if (!xmlhttp.response) { // Likely an empty string
@@ -1374,7 +1394,7 @@ Blockly.ReplMgr.getFromRendezvous = function() {
                 // either call it shortly, if the Companion version is acceptable
                 // or in the dialog response handler below if the Companion
                 // is out of date but the user chooses to continue anyway
-                var getstarted = function() {
+                var getstarted = function () {
                     if (json.webrtc && json.webrtc == "true") { // We are the webRTC Companion
                         top.usewebrtc = true;
                         rs.state = me.rsState.ASSET;
@@ -1383,7 +1403,7 @@ Blockly.ReplMgr.getFromRendezvous = function() {
                     }
                     rs.state = Blockly.ReplMgr.rsState.CONNECTED;
 
-                    RefreshAssets(function() {
+                    RefreshAssets(function () {
                         Blockly.ReplMgr.loadExtensions();
                     });
                     // Start the connection with the Repl itself
@@ -1397,32 +1417,32 @@ Blockly.ReplMgr.getFromRendezvous = function() {
                     if (top.COMPANION_UPDATE_URL1) {
                         var url = top.location.origin + top.COMPANION_UPDATE_URL1;
                         var dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_COMPANION_VERSION_CHECK,
-                                                         Blockly.Msg.REPL_COMPANION_OUT_OF_DATE2 + '<br/>' +
-                                                         Blockly.ReplMgr.makeqrcode(url),
-                                                         Blockly.Msg.REPL_OK, false,
-                                                         Blockly.Msg.REPL_NOT_NOW, 0,
-                                                         function(response) {
-                                                             dialog.hide();
-                                                             if (response == Blockly.Msg.REPL_NOT_NOW) {
-                                                                 getstarted();
-                                                             } else {
-                                                                 top.ReplState.state = Blockly.ReplMgr.rsState.IDLE;
-                                                                 top.BlocklyPanel_indicateDisconnect();
-                                                             }
-                                                         });
+                            Blockly.Msg.REPL_COMPANION_OUT_OF_DATE2 + '<br/>' +
+                            Blockly.ReplMgr.makeqrcode(url),
+                            Blockly.Msg.REPL_OK, false,
+                            Blockly.Msg.REPL_NOT_NOW, 0,
+                            function (response) {
+                                dialog.hide();
+                                if (response == Blockly.Msg.REPL_NOT_NOW) {
+                                    getstarted();
+                                } else {
+                                    top.ReplState.state = Blockly.ReplMgr.rsState.IDLE;
+                                    top.BlocklyPanel_indicateDisconnect();
+                                }
+                            });
 
                     } else {
                         dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_COMPANION_VERSION_CHECK,
-                                                         Blockly.Msg.REPL_COMPANION_OUT_OF_DATE1 + " " +
-                                                         top.PREFERRED_COMPANION,
-                                                         Blockly.Msg.REPL_OK, false, null, 0,
-                                                         function(response) {
-                                                             dialog.hide();
-                                                             getstarted();
-                                                         });
+                            Blockly.Msg.REPL_COMPANION_OUT_OF_DATE1 + " " +
+                            top.PREFERRED_COMPANION,
+                            Blockly.Msg.REPL_OK, false, null, 0,
+                            function (response) {
+                                dialog.hide();
+                                getstarted();
+                            });
                     }
                 } else {
-                        getstarted();
+                    getstarted();
                 }
             } catch (err) {
                 console.log("getFromRendezvous(): Error: " + err);
@@ -1433,16 +1453,16 @@ Blockly.ReplMgr.getFromRendezvous = function() {
     xmlhttp.send();
 };
 
-Blockly.ReplMgr.resendAssetsAndExtensions = function() {
+Blockly.ReplMgr.resendAssetsAndExtensions = function () {
     var rs = top.ReplState;
     var RefreshAssets = top.AssetManager_refreshAssets;
     rs.state = Blockly.ReplMgr.rsState.ASSET;
-    RefreshAssets(function() {
+    RefreshAssets(function () {
         Blockly.ReplMgr.loadExtensions();
     });
 };
 
-Blockly.ReplMgr.loadExtensions = function() {
+Blockly.ReplMgr.loadExtensions = function () {
     var rs = top.ReplState;
     if (top.usewebrtc) {
         // Need to trigger the loading of extensions here
@@ -1460,7 +1480,7 @@ Blockly.ReplMgr.loadExtensions = function() {
         var encoder = new goog.Uri.QueryData();
         encoder.add('extensions', JSON.stringify(top.AssetManager_getExtensions()));
         xmlhttp.open('POST', rs.extensionurl, true);
-        xmlhttp.onreadystatechange = function() {
+        xmlhttp.onreadystatechange = function () {
             /* Older companions do not support ReplMgr providing an extension list. This check below
              * handles older companions as well as new companions so that we don't break old clients.
              */
@@ -1478,14 +1498,14 @@ Blockly.ReplMgr.loadExtensions = function() {
 
 // Called by the main poller function. Manages the state transitions for polling
 // The rendezvous server
-Blockly.ReplMgr.rendPoll = function() {
+Blockly.ReplMgr.rendPoll = function () {
     var dialog;
     if (top.ReplState.state == this.rsState.RENDEZVOUS) {
         top.ReplState.count = top.ReplState.count + 1;
         if (top.ReplState.count > 40) {
             top.ReplState.state = this.rsState.IDLE;
             top.ReplState.dialog.hide(); // Punt the dialog
-            dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_CONNECTION_FAILURE1, Blockly.Msg.REPL_TRY_AGAIN1, Blockly.Msg.REPL_OK, false, null, 0, function() {
+            dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_CONNECTION_FAILURE1, Blockly.Msg.REPL_TRY_AGAIN1, Blockly.Msg.REPL_OK, false, null, 0, function () {
                 dialog.hide();
             });
             top.ReplState.url = null;
@@ -1495,7 +1515,7 @@ Blockly.ReplMgr.rendPoll = function() {
     }
 };
 
-Blockly.ReplMgr.makeDialogMessage = function(code) {
+Blockly.ReplMgr.makeDialogMessage = function (code) {
     var scancode;
     if (top.rendezvousServer != 'rendezvous.appinventor.mit.edu') { // Should really get this from YAV
         scancode = top.rendezvousServer + ";" + code;
@@ -1517,27 +1537,27 @@ Blockly.ReplMgr.makeDialogMessage = function(code) {
     return retval;
 };
 
-Blockly.ReplMgr.hmac = function(input) {
+Blockly.ReplMgr.hmac = function (input) {
     var googhash = new goog.crypt.Hmac(new goog.crypt.Sha1(), this.string_to_bytes(top.ReplState.replcode), 64);
-    return(this.bytes_to_hexstring(googhash.getHmac(this.string_to_bytes(input))));
+    return (this.bytes_to_hexstring(googhash.getHmac(this.string_to_bytes(input))));
 };
 
-Blockly.ReplMgr.sha1 = function(input) {
+Blockly.ReplMgr.sha1 = function (input) {
     var hasher = new goog.crypt.Sha1();
     hasher.update(this.string_to_bytes(input));
-    return(this.bytes_to_hexstring(hasher.digest()));
+    return (this.bytes_to_hexstring(hasher.digest()));
 };
 
-Blockly.ReplMgr.string_to_bytes = function(input) {
+Blockly.ReplMgr.string_to_bytes = function (input) {
     var z = [];
-    for (var i = 0; i < input.length; i++ )
+    for (var i = 0; i < input.length; i++)
         z.push(input.charCodeAt(i));
     return z;
 };
 
-Blockly.ReplMgr.bytes_to_hexstring = function(input) {
+Blockly.ReplMgr.bytes_to_hexstring = function (input) {
     var z = [];
-    for (var i = 0; i < input.length; i++ )
+    for (var i = 0; i < input.length; i++)
         z.push(Number(256 + input[i]).toString(16).substring(1, 3));
     return z.join("");
 };
@@ -1548,7 +1568,7 @@ Blockly.ReplMgr.bytes_to_hexstring = function(input) {
 // Inventor server without having the browser have to get them and
 // "stuff" them to the Companion
 
-Blockly.ReplMgr.getCookie = function() {
+Blockly.ReplMgr.getCookie = function () {
     var regex = /AppInventor *=([^;]+)/;
     var cookie;
     if (regex.test(document.cookie)) {
@@ -1560,7 +1580,7 @@ Blockly.ReplMgr.getCookie = function() {
     return cookie;
 };
 
-Blockly.ReplMgr.putAsset = function(projectid, filename, blob, success, fail, force) {
+Blockly.ReplMgr.putAsset = function (projectid, filename, blob, success, fail, force) {
     if (top.ReplState === undefined)
         return false;
     if (!force && (top.ReplState.state != this.rsState.ASSET && top.ReplState.state != this.rsState.CONNECTED))
@@ -1590,7 +1610,7 @@ Blockly.ReplMgr.putAsset = function(projectid, filename, blob, success, fail, fo
 
     conn.retries = 3;
     conn.open('PUT', rs.baseurl + '?' + encoder.toString(), true);
-    conn.onreadystatechange = function() {
+    conn.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
             if (success) {      // process callbacks
                 success();
@@ -1615,12 +1635,12 @@ Blockly.ReplMgr.putAsset = function(projectid, filename, blob, success, fail, fo
     return true;
 };
 
-Blockly.ReplMgr.hardreset = function(formName, callback) {
+Blockly.ReplMgr.hardreset = function (formName, callback) {
     top.AssetManager_reset(formName); // Reset the notion of what assets
-                                                // are loaded.
+    // are loaded.
     var xhr = goog.net.XmlHttp();
     xhr.open("GET", "http://localhost:8004/reset/", true);
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
             if (callback) {     // Always call the callback
                 callback(this.status);
@@ -1634,15 +1654,16 @@ Blockly.ReplMgr.hardreset = function(formName, callback) {
 // run the reset-emulator script. This will reset things to their
 // "factory" defaults.
 
-Blockly.ReplMgr.ehardreset = function(formName) {
+Blockly.ReplMgr.ehardreset = function (formName) {
     var context = this;
-    var dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_DO_YOU_REALLY_Q, Blockly.Msg.REPL_FACTORY_RESET, Blockly.Msg.REPL_OK, true, Blockly.Msg.REPL_CANCEL, 0, function(response) {
+    var dialog = new Blockly.Util.Dialog(Blockly.Msg.REPL_DO_YOU_REALLY_Q, Blockly.Msg.REPL_FACTORY_RESET, Blockly.Msg.REPL_OK, true, Blockly.Msg.REPL_CANCEL, 0, function (response) {
         dialog.hide();
         if (response == Blockly.Msg.REPL_OK) {
-            context.hardreset(formName, function() {
+            context.hardreset(formName, function () {
                 var xhr = goog.net.XmlHttp();
                 xhr.open("GET", "http://localhost:8004/emulatorreset/", true);
-                xhr.onreadystatchange = function() {}; // Ignore errors
+                xhr.onreadystatchange = function () {
+                }; // Ignore errors
                 xhr.send();
             });
         }
@@ -1656,7 +1677,7 @@ Blockly.ReplMgr.ehardreset = function(formName) {
 // know the current form in order to find the Blockly instance that is
 // live.
 
-Blockly.ReplMgr.makeqrcode = function(instring) {
+Blockly.ReplMgr.makeqrcode = function (instring) {
     var q = this.qrcode(4, 'L'); // First try a type 4 code
     //var retval;
     q.addData(instring);
@@ -1687,7 +1708,7 @@ Blockly.ReplMgr.makeqrcode = function(instring) {
 //
 //---------------------------------------------------------------------
 
-Blockly.ReplMgr.qrcode = function() {
+Blockly.ReplMgr.qrcode = function () {
 
     //---------------------------------------------------------------------
     // qrcode
@@ -1698,7 +1719,7 @@ Blockly.ReplMgr.qrcode = function() {
      * @param typeNumber 1 to 10
      * @param errorCorrectLevel 'L','M','Q','H'
      */
-    var qrcode = function(typeNumber, errorCorrectLevel) {
+    var qrcode = function (typeNumber, errorCorrectLevel) {
 
         var PAD0 = 0xEC;
         var PAD1 = 0x11;
@@ -1712,10 +1733,10 @@ Blockly.ReplMgr.qrcode = function() {
 
         var _this = {};
 
-        var makeImpl = function(test, maskPattern) {
+        var makeImpl = function (test, maskPattern) {
 
             _moduleCount = _typeNumber * 4 + 17;
-            _modules = function(moduleCount) {
+            _modules = function (moduleCount) {
                 var modules = new Array(moduleCount);
                 for (var row = 0; row < moduleCount; row += 1) {
                     modules[row] = new Array(moduleCount);
@@ -1744,7 +1765,7 @@ Blockly.ReplMgr.qrcode = function() {
             mapData(_dataCache, maskPattern);
         };
 
-        var setupPositionProbePattern = function(row, col) {
+        var setupPositionProbePattern = function (row, col) {
 
             for (var r = -1; r <= 7; r += 1) {
 
@@ -1754,9 +1775,9 @@ Blockly.ReplMgr.qrcode = function() {
 
                     if (col + c <= -1 || _moduleCount <= col + c) continue;
 
-                    if ( (0 <= r && r <= 6 && (c === 0 || c == 6) ) ||
-                         (0 <= c && c <= 6 && (r === 0 || r == 6) ) ||
-                         (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+                    if ((0 <= r && r <= 6 && (c === 0 || c == 6)) ||
+                        (0 <= c && c <= 6 && (r === 0 || r == 6)) ||
+                        (2 <= r && r <= 4 && 2 <= c && c <= 4)) {
                         _modules[row + r][col + c] = true;
                     } else {
                         _modules[row + r][col + c] = false;
@@ -1765,7 +1786,7 @@ Blockly.ReplMgr.qrcode = function() {
             }
         };
 
-        var getBestMaskPattern = function() {
+        var getBestMaskPattern = function () {
 
             var minLostPoint = 0;
             var pattern = 0;
@@ -1785,7 +1806,7 @@ Blockly.ReplMgr.qrcode = function() {
             return pattern;
         };
 
-        var setupTimingPattern = function() {
+        var setupTimingPattern = function () {
 
             for (var r = 8; r < _moduleCount - 8; r += 1) {
                 if (_modules[r][6] !== null) {
@@ -1802,7 +1823,7 @@ Blockly.ReplMgr.qrcode = function() {
             }
         };
 
-        var setupPositionAdjustPattern = function() {
+        var setupPositionAdjustPattern = function () {
 
             var pos = QRUtil.getPatternPosition(_typeNumber);
 
@@ -1822,7 +1843,7 @@ Blockly.ReplMgr.qrcode = function() {
                         for (var c = -2; c <= 2; c += 1) {
 
                             if (r == -2 || r == 2 || c == -2 || c == 2 ||
-                               (r === 0 && c === 0) ) {
+                                (r === 0 && c === 0)) {
                                 _modules[row + r][col + c] = true;
                             } else {
                                 _modules[row + r][col + c] = false;
@@ -1833,24 +1854,24 @@ Blockly.ReplMgr.qrcode = function() {
             }
         };
 
-        var setupTypeNumber = function(test) {
+        var setupTypeNumber = function (test) {
 
             var bits = QRUtil.getBCHTypeNumber(_typeNumber);
             var i;
             var mod;
 
             for (i = 0; i < 18; i += 1) {
-                mod = (!test && ( (bits >> i) & 1) == 1);
+                mod = (!test && ((bits >> i) & 1) == 1);
                 _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
             }
 
             for (i = 0; i < 18; i += 1) {
-                mod = (!test && ( (bits >> i) & 1) == 1);
+                mod = (!test && ((bits >> i) & 1) == 1);
                 _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
             }
         };
 
-        var setupTypeInfo = function(test, maskPattern) {
+        var setupTypeInfo = function (test, maskPattern) {
 
             var data = (_errorCorrectLevel << 3) | maskPattern;
             var bits = QRUtil.getBCHTypeInfo(data);
@@ -1860,7 +1881,7 @@ Blockly.ReplMgr.qrcode = function() {
             // vertical
             for (i = 0; i < 15; i += 1) {
 
-                mod = (!test && ( (bits >> i) & 1) == 1);
+                mod = (!test && ((bits >> i) & 1) == 1);
 
                 if (i < 6) {
                     _modules[i][8] = mod;
@@ -1874,7 +1895,7 @@ Blockly.ReplMgr.qrcode = function() {
             // horizontal
             for (i = 0; i < 15; i += 1) {
 
-                mod = (!test && ( (bits >> i) & 1) == 1);
+                mod = (!test && ((bits >> i) & 1) == 1);
 
                 if (i < 8) {
                     _modules[8][_moduleCount - i - 1] = mod;
@@ -1889,7 +1910,7 @@ Blockly.ReplMgr.qrcode = function() {
             _modules[_moduleCount - 8][8] = (!test);
         };
 
-        var mapData = function(data, maskPattern) {
+        var mapData = function (data, maskPattern) {
 
             var inc = -1;
             var row = _moduleCount - 1;
@@ -1910,7 +1931,7 @@ Blockly.ReplMgr.qrcode = function() {
                             var dark = false;
 
                             if (byteIndex < data.length) {
-                                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+                                dark = (((data[byteIndex] >>> bitIndex) & 1) == 1);
                             }
 
                             var mask = maskFunc(row, col - c);
@@ -1940,13 +1961,13 @@ Blockly.ReplMgr.qrcode = function() {
             }
         };
 
-        var createBytes = function(buffer, rsBlocks) {
+        var createBytes = function (buffer, rsBlocks) {
 
             var offset = 0;
 
             var maxDcCount = 0;
             var maxEcCount = 0;
-            var i,r;
+            var i, r;
 
             var dcdata = new Array(rsBlocks.length);
             var ecdata = new Array(rsBlocks.length);
@@ -1973,7 +1994,7 @@ Blockly.ReplMgr.qrcode = function() {
                 ecdata[r] = new Array(rsPoly.getLength() - 1);
                 for (i = 0; i < ecdata[r].length; i += 1) {
                     var modIndex = i + modPoly.getLength() - ecdata[r].length;
-                    ecdata[r][i] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
+                    ecdata[r][i] = (modIndex >= 0) ? modPoly.get(modIndex) : 0;
                 }
             }
 
@@ -2006,7 +2027,7 @@ Blockly.ReplMgr.qrcode = function() {
             return data;
         };
 
-        var createData = function(typeNumber, errorCorrectLevel, dataList) {
+        var createData = function (typeNumber, errorCorrectLevel, dataList) {
 
             var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
             var i;
@@ -2016,7 +2037,7 @@ Blockly.ReplMgr.qrcode = function() {
             for (i = 0; i < dataList.length; i += 1) {
                 var data = dataList[i];
                 buffer.put(data.getMode(), 4);
-                buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+                buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber));
                 data.write(buffer);
             }
 
@@ -2028,10 +2049,10 @@ Blockly.ReplMgr.qrcode = function() {
 
             if (buffer.getLengthInBits() > totalDataCount * 8) {
                 throw new Error('code length overflow. (' +
-                                buffer.getLengthInBits() +
-                                '>' +
-                                totalDataCount * 8 +
-                                ')');
+                    buffer.getLengthInBits() +
+                    '>' +
+                    totalDataCount * 8 +
+                    ')');
             }
 
             // end code
@@ -2061,31 +2082,31 @@ Blockly.ReplMgr.qrcode = function() {
             return createBytes(buffer, rsBlocks);
         };
 
-        _this.addData = function(data) {
+        _this.addData = function (data) {
             var newData = qr8BitByte(data);
             _dataList.push(newData);
             _dataCache = null;
         };
 
-        _this.isDark = function(row, col) {
+        _this.isDark = function (row, col) {
             if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
                 throw new Error(row + ',' + col);
             }
             return _modules[row][col];
         };
 
-        _this.getModuleCount = function() {
+        _this.getModuleCount = function () {
             return _moduleCount;
         };
 
-        _this.make = function() {
-            makeImpl(false, getBestMaskPattern() );
+        _this.make = function () {
+            makeImpl(false, getBestMaskPattern());
         };
 
-        _this.createTableTag = function(cellSize, margin) {
+        _this.createTableTag = function (cellSize, margin) {
 
             cellSize = cellSize || 2;
-            margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+            margin = (typeof margin == 'undefined') ? cellSize * 4 : margin;
 
             var qrHtml = '';
 
@@ -2108,7 +2129,7 @@ Blockly.ReplMgr.qrcode = function() {
                     qrHtml += ' width: ' + cellSize + 'px;';
                     qrHtml += ' height: ' + cellSize + 'px;';
                     qrHtml += ' background-color: ';
-                    qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+                    qrHtml += _this.isDark(r, c) ? '#000000' : '#ffffff';
                     qrHtml += ';';
                     qrHtml += '"/>';
                 }
@@ -2122,24 +2143,24 @@ Blockly.ReplMgr.qrcode = function() {
             return qrHtml;
         };
 
-        _this.createImgTag = function(cellSize, margin) {
+        _this.createImgTag = function (cellSize, margin) {
 
             cellSize = cellSize || 2;
-            margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+            margin = (typeof margin == 'undefined') ? cellSize * 4 : margin;
 
             var size = _this.getModuleCount() * cellSize + margin * 2;
             var min = margin;
             var max = size - margin;
 
-            return createImgTag(size, size, function(x, y) {
+            return createImgTag(size, size, function (x, y) {
                 if (min <= x && x < max && min <= y && y < max) {
-                    var c = Math.floor( (x - min) / cellSize);
-                    var r = Math.floor( (y - min) / cellSize);
-                    return _this.isDark(r, c)? 0 : 1;
+                    var c = Math.floor((x - min) / cellSize);
+                    var r = Math.floor((y - min) / cellSize);
+                    return _this.isDark(r, c) ? 0 : 1;
                 } else {
                     return 1;
                 }
-            } );
+            });
         };
 
         return _this;
@@ -2149,7 +2170,7 @@ Blockly.ReplMgr.qrcode = function() {
     // qrcode.stringToBytes
     //---------------------------------------------------------------------
 
-    qrcode.stringToBytes = function(s) {
+    qrcode.stringToBytes = function (s) {
         var bytes = [];
         for (var i = 0; i < s.length; i += 1) {
             var c = s.charCodeAt(i);
@@ -2167,14 +2188,14 @@ Blockly.ReplMgr.qrcode = function() {
      * [16bit Unicode],[16bit Bytes], ...
      * @param numChars
      */
-    qrcode.createStringToBytes = function(unicodeData, numChars) {
+    qrcode.createStringToBytes = function (unicodeData, numChars) {
 
         // create conversion map.
 
-        var unicodeMap = function() {
+        var unicodeMap = function () {
 
             var bin = base64DecodeInputStream(unicodeData);
-            var read = function() {
+            var read = function () {
                 var b = bin.read();
                 if (b == -1) throw new Error();
                 return b;
@@ -2188,7 +2209,7 @@ Blockly.ReplMgr.qrcode = function() {
                 var b1 = read();
                 var b2 = read();
                 var b3 = read();
-                var k = String.fromCharCode( (b0 << 8) | b1);
+                var k = String.fromCharCode((b0 << 8) | b1);
                 var v = (b2 << 8) | b3;
                 unicodeMap[k] = v;
                 count += 1;
@@ -2202,7 +2223,7 @@ Blockly.ReplMgr.qrcode = function() {
 
         var unknownChar = '?'.charCodeAt(0);
 
-        return function(s) {
+        return function (s) {
             var bytes = [];
             for (var i = 0; i < s.length; i += 1) {
                 var c = s.charCodeAt(i);
@@ -2211,7 +2232,7 @@ Blockly.ReplMgr.qrcode = function() {
                 } else {
                     var b = unicodeMap[s.charAt(i)];
                     if (typeof b == 'number') {
-                        if ( (b & 0xff) == b) {
+                        if ((b & 0xff) == b) {
                             // 1byte
                             bytes.push(b);
                         } else {
@@ -2233,10 +2254,10 @@ Blockly.ReplMgr.qrcode = function() {
     //---------------------------------------------------------------------
 
     var QRMode = {
-        MODE_NUMBER :           1 << 0,
-        MODE_ALPHA_NUM :        1 << 1,
-        MODE_8BIT_BYTE :        1 << 2,
-        MODE_KANJI :            1 << 3
+        MODE_NUMBER: 1 << 0,
+        MODE_ALPHA_NUM: 1 << 1,
+        MODE_8BIT_BYTE: 1 << 2,
+        MODE_KANJI: 1 << 3
     };
 
     //---------------------------------------------------------------------
@@ -2244,10 +2265,10 @@ Blockly.ReplMgr.qrcode = function() {
     //---------------------------------------------------------------------
 
     var QRErrorCorrectLevel = {
-        L : 1,
-        M : 0,
-        Q : 3,
-        H : 2
+        L: 1,
+        M: 0,
+        Q: 3,
+        H: 2
     };
 
     //---------------------------------------------------------------------
@@ -2255,21 +2276,21 @@ Blockly.ReplMgr.qrcode = function() {
     //---------------------------------------------------------------------
 
     var QRMaskPattern = {
-        PATTERN000 : 0,
-        PATTERN001 : 1,
-        PATTERN010 : 2,
-        PATTERN011 : 3,
-        PATTERN100 : 4,
-        PATTERN101 : 5,
-        PATTERN110 : 6,
-        PATTERN111 : 7
+        PATTERN000: 0,
+        PATTERN001: 1,
+        PATTERN010: 2,
+        PATTERN011: 3,
+        PATTERN100: 4,
+        PATTERN101: 5,
+        PATTERN110: 6,
+        PATTERN111: 7
     };
 
     //---------------------------------------------------------------------
     // QRUtil
     //---------------------------------------------------------------------
 
-    var QRUtil = function() {
+    var QRUtil = function () {
 
         var PATTERN_POSITION_TABLE = [
             [],
@@ -2319,7 +2340,7 @@ Blockly.ReplMgr.qrcode = function() {
 
         var _this = {};
 
-        var getBCHDigit = function(data) {
+        var getBCHDigit = function (data) {
             var digit = 0;
             while (data !== 0) {
                 digit += 1;
@@ -2328,99 +2349,127 @@ Blockly.ReplMgr.qrcode = function() {
             return digit;
         };
 
-        _this.getBCHTypeInfo = function(data) {
+        _this.getBCHTypeInfo = function (data) {
             var d = data << 10;
             while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
-                d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+                d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15)));
             }
-            return ( (data << 10) | d) ^ G15_MASK;
+            return ((data << 10) | d) ^ G15_MASK;
         };
 
-        _this.getBCHTypeNumber = function(data) {
+        _this.getBCHTypeNumber = function (data) {
             var d = data << 12;
             while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
-                d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+                d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18)));
             }
             return (data << 12) | d;
         };
 
-        _this.getPatternPosition = function(typeNumber) {
+        _this.getPatternPosition = function (typeNumber) {
             return PATTERN_POSITION_TABLE[typeNumber - 1];
         };
 
-        _this.getMaskFunction = function(maskPattern) {
+        _this.getMaskFunction = function (maskPattern) {
 
             switch (maskPattern) {
 
-            case QRMaskPattern.PATTERN000 :
-                return function(i, j) { return (i + j) % 2 === 0; };
-            case QRMaskPattern.PATTERN001 :
-                return function(i, j) { return i % 2 === 0; };
-            case QRMaskPattern.PATTERN010 :
-                return function(i, j) { return j % 3 === 0; };
-            case QRMaskPattern.PATTERN011 :
-                return function(i, j) { return (i + j) % 3 === 0; };
-            case QRMaskPattern.PATTERN100 :
-                return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0; };
-            case QRMaskPattern.PATTERN101 :
-                return function(i, j) { return (i * j) % 2 + (i * j) % 3 === 0; };
-            case QRMaskPattern.PATTERN110 :
-                return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 === 0; };
-            case QRMaskPattern.PATTERN111 :
-                return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 === 0; };
+                case QRMaskPattern.PATTERN000 :
+                    return function (i, j) {
+                        return (i + j) % 2 === 0;
+                    };
+                case QRMaskPattern.PATTERN001 :
+                    return function (i, j) {
+                        return i % 2 === 0;
+                    };
+                case QRMaskPattern.PATTERN010 :
+                    return function (i, j) {
+                        return j % 3 === 0;
+                    };
+                case QRMaskPattern.PATTERN011 :
+                    return function (i, j) {
+                        return (i + j) % 3 === 0;
+                    };
+                case QRMaskPattern.PATTERN100 :
+                    return function (i, j) {
+                        return (Math.floor(i / 2) + Math.floor(j / 3)) % 2 === 0;
+                    };
+                case QRMaskPattern.PATTERN101 :
+                    return function (i, j) {
+                        return (i * j) % 2 + (i * j) % 3 === 0;
+                    };
+                case QRMaskPattern.PATTERN110 :
+                    return function (i, j) {
+                        return ((i * j) % 2 + (i * j) % 3) % 2 === 0;
+                    };
+                case QRMaskPattern.PATTERN111 :
+                    return function (i, j) {
+                        return ((i * j) % 3 + (i + j) % 2) % 2 === 0;
+                    };
 
-            default :
-                throw new Error('bad maskPattern:' + maskPattern);
+                default :
+                    throw new Error('bad maskPattern:' + maskPattern);
             }
         };
 
-        _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+        _this.getErrorCorrectPolynomial = function (errorCorrectLength) {
             var a = qrPolynomial([1], 0);
             for (var i = 0; i < errorCorrectLength; i += 1) {
-                a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+                a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0));
             }
             return a;
         };
 
-        _this.getLengthInBits = function(mode, type) {
+        _this.getLengthInBits = function (mode, type) {
 
             if (1 <= type && type < 10) {
 
                 // 1 - 9
 
-                switch(mode) {
-                case QRMode.MODE_NUMBER         : return 10;
-                case QRMode.MODE_ALPHA_NUM      : return 9;
-                case QRMode.MODE_8BIT_BYTE      : return 8;
-                case QRMode.MODE_KANJI          : return 8;
-                default :
-                    throw new Error('mode:' + mode);
+                switch (mode) {
+                    case QRMode.MODE_NUMBER         :
+                        return 10;
+                    case QRMode.MODE_ALPHA_NUM      :
+                        return 9;
+                    case QRMode.MODE_8BIT_BYTE      :
+                        return 8;
+                    case QRMode.MODE_KANJI          :
+                        return 8;
+                    default :
+                        throw new Error('mode:' + mode);
                 }
 
             } else if (type < 27) {
 
                 // 10 - 26
 
-                switch(mode) {
-                case QRMode.MODE_NUMBER         : return 12;
-                case QRMode.MODE_ALPHA_NUM      : return 11;
-                case QRMode.MODE_8BIT_BYTE      : return 16;
-                case QRMode.MODE_KANJI          : return 10;
-                default :
-                    throw new Error('mode:' + mode);
+                switch (mode) {
+                    case QRMode.MODE_NUMBER         :
+                        return 12;
+                    case QRMode.MODE_ALPHA_NUM      :
+                        return 11;
+                    case QRMode.MODE_8BIT_BYTE      :
+                        return 16;
+                    case QRMode.MODE_KANJI          :
+                        return 10;
+                    default :
+                        throw new Error('mode:' + mode);
                 }
 
             } else if (type < 41) {
 
                 // 27 - 40
 
-                switch(mode) {
-                case QRMode.MODE_NUMBER         : return 14;
-                case QRMode.MODE_ALPHA_NUM      : return 13;
-                case QRMode.MODE_8BIT_BYTE      : return 16;
-                case QRMode.MODE_KANJI          : return 12;
-                default :
-                    throw new Error('mode:' + mode);
+                switch (mode) {
+                    case QRMode.MODE_NUMBER         :
+                        return 14;
+                    case QRMode.MODE_ALPHA_NUM      :
+                        return 13;
+                    case QRMode.MODE_8BIT_BYTE      :
+                        return 16;
+                    case QRMode.MODE_KANJI          :
+                        return 12;
+                    default :
+                        throw new Error('mode:' + mode);
                 }
 
             } else {
@@ -2428,7 +2477,7 @@ Blockly.ReplMgr.qrcode = function() {
             }
         };
 
-        _this.getLostPoint = function(qrcode) {
+        _this.getLostPoint = function (qrcode) {
 
             var moduleCount = qrcode.getModuleCount();
             var row, col;
@@ -2459,7 +2508,7 @@ Blockly.ReplMgr.qrcode = function() {
                                 continue;
                             }
 
-                            if (dark == qrcode.isDark(row + r, col + c) ) {
+                            if (dark == qrcode.isDark(row + r, col + c)) {
                                 sameCount += 1;
                             }
                         }
@@ -2476,10 +2525,10 @@ Blockly.ReplMgr.qrcode = function() {
             for (row = 0; row < moduleCount - 1; row += 1) {
                 for (col = 0; col < moduleCount - 1; col += 1) {
                     var count = 0;
-                    if (qrcode.isDark(row, col) ) count += 1;
-                    if (qrcode.isDark(row + 1, col) ) count += 1;
-                    if (qrcode.isDark(row, col + 1) ) count += 1;
-                    if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+                    if (qrcode.isDark(row, col)) count += 1;
+                    if (qrcode.isDark(row + 1, col)) count += 1;
+                    if (qrcode.isDark(row, col + 1)) count += 1;
+                    if (qrcode.isDark(row + 1, col + 1)) count += 1;
                     if (count === 0 || count == 4) {
                         lostPoint += 3;
                     }
@@ -2496,7 +2545,7 @@ Blockly.ReplMgr.qrcode = function() {
                         qrcode.isDark(row, col + 3) &&
                         qrcode.isDark(row, col + 4) &&
                         !qrcode.isDark(row, col + 5) &&
-                        qrcode.isDark(row, col + 6) ) {
+                        qrcode.isDark(row, col + 6)) {
                         lostPoint += 40;
                     }
                 }
@@ -2510,7 +2559,7 @@ Blockly.ReplMgr.qrcode = function() {
                         qrcode.isDark(row + 3, col) &&
                         qrcode.isDark(row + 4, col) &&
                         !qrcode.isDark(row + 5, col) &&
-                        qrcode.isDark(row + 6, col) ) {
+                        qrcode.isDark(row + 6, col)) {
                         lostPoint += 40;
                     }
                 }
@@ -2522,7 +2571,7 @@ Blockly.ReplMgr.qrcode = function() {
 
             for (col = 0; col < moduleCount; col += 1) {
                 for (row = 0; row < moduleCount; row += 1) {
-                    if (qrcode.isDark(row, col) ) {
+                    if (qrcode.isDark(row, col)) {
                         darkCount += 1;
                     }
                 }
@@ -2541,7 +2590,7 @@ Blockly.ReplMgr.qrcode = function() {
     // QRMath
     //---------------------------------------------------------------------
 
-    var QRMath = function() {
+    var QRMath = function () {
 
         var EXP_TABLE = new Array(256);
         var LOG_TABLE = new Array(256);
@@ -2558,12 +2607,12 @@ Blockly.ReplMgr.qrcode = function() {
                 ^ EXP_TABLE[i - 8];
         }
         for (i = 0; i < 255; i += 1) {
-            LOG_TABLE[EXP_TABLE[i] ] = i;
+            LOG_TABLE[EXP_TABLE[i]] = i;
         }
 
         var _this = {};
 
-        _this.glog = function(n) {
+        _this.glog = function (n) {
 
             if (n < 1) {
                 throw new Error('glog(' + n + ')');
@@ -2572,7 +2621,7 @@ Blockly.ReplMgr.qrcode = function() {
             return LOG_TABLE[n];
         };
 
-        _this.gexp = function(n) {
+        _this.gexp = function (n) {
 
             while (n < 0) {
                 n += 255;
@@ -2598,7 +2647,7 @@ Blockly.ReplMgr.qrcode = function() {
             throw new Error(num.length + '/' + shift);
         }
 
-        var _num = function() {
+        var _num = function () {
             var offset = 0;
             while (offset < num.length && num[offset] === 0) {
                 offset += 1;
@@ -2612,43 +2661,43 @@ Blockly.ReplMgr.qrcode = function() {
 
         var _this = {};
 
-        _this.get = function(index) {
+        _this.get = function (index) {
             return _num[index];
         };
 
-        _this.getLength = function() {
+        _this.getLength = function () {
             return _num.length;
         };
 
-        _this.multiply = function(e) {
+        _this.multiply = function (e) {
 
             var num = new Array(_this.getLength() + e.getLength() - 1);
 
             for (var i = 0; i < _this.getLength(); i += 1) {
                 for (var j = 0; j < e.getLength(); j += 1) {
-                    num[i + j] ^= QRMath.gexp(QRMath.glog(_this.get(i) ) + QRMath.glog(e.get(j) ) );
+                    num[i + j] ^= QRMath.gexp(QRMath.glog(_this.get(i)) + QRMath.glog(e.get(j)));
                 }
             }
 
             return qrPolynomial(num, 0);
         };
 
-        _this.mod = function(e) {
+        _this.mod = function (e) {
             var i;
 
             if (_this.getLength() - e.getLength() < 0) {
                 return _this;
             }
 
-            var ratio = QRMath.glog(_this.get(0) ) - QRMath.glog(e.get(0) );
+            var ratio = QRMath.glog(_this.get(0)) - QRMath.glog(e.get(0));
 
-            var num = new Array(_this.getLength() );
+            var num = new Array(_this.getLength());
             for (i = 0; i < _this.getLength(); i += 1) {
                 num[i] = _this.get(i);
             }
 
             for (i = 0; i < e.getLength(); i += 1) {
-                num[i] ^= QRMath.gexp(QRMath.glog(e.get(i) ) + ratio);
+                num[i] ^= QRMath.gexp(QRMath.glog(e.get(i)) + ratio);
             }
 
             // recursive call
@@ -2662,7 +2711,7 @@ Blockly.ReplMgr.qrcode = function() {
     // QRRSBlock
     //---------------------------------------------------------------------
 
-    var QRRSBlock = function() {
+    var QRRSBlock = function () {
 
         var RS_BLOCK_TABLE = [
 
@@ -2732,7 +2781,7 @@ Blockly.ReplMgr.qrcode = function() {
             [6, 43, 15, 2, 44, 16]
         ];
 
-        var qrRSBlock = function(totalCount, dataCount) {
+        var qrRSBlock = function (totalCount, dataCount) {
             var _this = {};
             _this.totalCount = totalCount;
             _this.dataCount = dataCount;
@@ -2741,29 +2790,29 @@ Blockly.ReplMgr.qrcode = function() {
 
         var _this = {};
 
-        var getRsBlockTable = function(typeNumber, errorCorrectLevel) {
+        var getRsBlockTable = function (typeNumber, errorCorrectLevel) {
 
-            switch(errorCorrectLevel) {
-            case QRErrorCorrectLevel.L :
-                return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
-            case QRErrorCorrectLevel.M :
-                return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
-            case QRErrorCorrectLevel.Q :
-                return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
-            case QRErrorCorrectLevel.H :
-                return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
-            default :
-                return undefined;
+            switch (errorCorrectLevel) {
+                case QRErrorCorrectLevel.L :
+                    return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+                case QRErrorCorrectLevel.M :
+                    return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+                case QRErrorCorrectLevel.Q :
+                    return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+                case QRErrorCorrectLevel.H :
+                    return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+                default :
+                    return undefined;
             }
         };
 
-        _this.getRSBlocks = function(typeNumber, errorCorrectLevel) {
+        _this.getRSBlocks = function (typeNumber, errorCorrectLevel) {
 
             var rsBlock = getRsBlockTable(typeNumber, errorCorrectLevel);
 
             if (typeof rsBlock == 'undefined') {
                 throw new Error('bad rs block @ typeNumber:' + typeNumber +
-                                '/errorCorrectLevel:' + errorCorrectLevel);
+                    '/errorCorrectLevel:' + errorCorrectLevel);
             }
 
             var length = rsBlock.length / 3;
@@ -2777,7 +2826,7 @@ Blockly.ReplMgr.qrcode = function() {
                 var dataCount = rsBlock[i * 3 + 2];
 
                 for (var j = 0; j < count; j += 1) {
-                    list.push(qrRSBlock(totalCount, dataCount) );
+                    list.push(qrRSBlock(totalCount, dataCount));
                 }
             }
 
@@ -2791,33 +2840,33 @@ Blockly.ReplMgr.qrcode = function() {
     // qrBitBuffer
     //---------------------------------------------------------------------
 
-    var qrBitBuffer = function() {
+    var qrBitBuffer = function () {
 
         var _buffer = [];
         var _length = 0;
 
         var _this = {};
 
-        _this.getBuffer = function() {
+        _this.getBuffer = function () {
             return _buffer;
         };
 
-        _this.get = function(index) {
+        _this.get = function (index) {
             var bufIndex = Math.floor(index / 8);
-            return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+            return ((_buffer[bufIndex] >>> (7 - index % 8)) & 1) == 1;
         };
 
-        _this.put = function(num, length) {
+        _this.put = function (num, length) {
             for (var i = 0; i < length; i += 1) {
-                _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+                _this.putBit(((num >>> (length - i - 1)) & 1) == 1);
             }
         };
 
-        _this.getLengthInBits = function() {
+        _this.getLengthInBits = function () {
             return _length;
         };
 
-        _this.putBit = function(bit) {
+        _this.putBit = function (bit) {
 
             var bufIndex = Math.floor(_length / 8);
             if (_buffer.length <= bufIndex) {
@@ -2825,7 +2874,7 @@ Blockly.ReplMgr.qrcode = function() {
             }
 
             if (bit) {
-                _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+                _buffer[bufIndex] |= (0x80 >>> (_length % 8));
             }
 
             _length += 1;
@@ -2838,7 +2887,7 @@ Blockly.ReplMgr.qrcode = function() {
     // qr8BitByte
     //---------------------------------------------------------------------
 
-    var qr8BitByte = function(data) {
+    var qr8BitByte = function (data) {
 
         var _mode = QRMode.MODE_8BIT_BYTE;
         var _data = data;
@@ -2846,15 +2895,15 @@ Blockly.ReplMgr.qrcode = function() {
 
         var _this = {};
 
-        _this.getMode = function() {
+        _this.getMode = function () {
             return _mode;
         };
 
-        _this.getLength = function(buffer) {
+        _this.getLength = function (buffer) {
             return _bytes.length;
         };
 
-        _this.write = function(buffer) {
+        _this.write = function (buffer) {
             for (var i = 0; i < _bytes.length; i += 1) {
                 buffer.put(_bytes[i], 8);
             }
@@ -2871,22 +2920,22 @@ Blockly.ReplMgr.qrcode = function() {
     // byteArrayOutputStream
     //---------------------------------------------------------------------
 
-    var byteArrayOutputStream = function() {
+    var byteArrayOutputStream = function () {
 
         var _bytes = [];
 
         var _this = {};
 
-        _this.writeByte = function(b) {
+        _this.writeByte = function (b) {
             _bytes.push(b & 0xff);
         };
 
-        _this.writeShort = function(i) {
+        _this.writeShort = function (i) {
             _this.writeByte(i);
             _this.writeByte(i >>> 8);
         };
 
-        _this.writeBytes = function(b, off, len) {
+        _this.writeBytes = function (b, off, len) {
             off = off || 0;
             len = len || b.length;
             for (var i = 0; i < len; i += 1) {
@@ -2894,17 +2943,17 @@ Blockly.ReplMgr.qrcode = function() {
             }
         };
 
-        _this.writeString = function(s) {
+        _this.writeString = function (s) {
             for (var i = 0; i < s.length; i += 1) {
-                _this.writeByte(s.charCodeAt(i) );
+                _this.writeByte(s.charCodeAt(i));
             }
         };
 
-        _this.toByteArray = function() {
+        _this.toByteArray = function () {
             return _bytes;
         };
 
-        _this.toString = function() {
+        _this.toString = function () {
             var s = '';
             s += '[';
             for (var i = 0; i < _bytes.length; i += 1) {
@@ -2924,7 +2973,7 @@ Blockly.ReplMgr.qrcode = function() {
     // base64EncodeOutputStream
     //---------------------------------------------------------------------
 
-    var base64EncodeOutputStream = function() {
+    var base64EncodeOutputStream = function () {
 
         var _buffer = 0;
         var _buflen = 0;
@@ -2933,11 +2982,11 @@ Blockly.ReplMgr.qrcode = function() {
 
         var _this = {};
 
-        var writeEncoded = function(b) {
-            _base64 += String.fromCharCode(encode(b & 0x3f) );
+        var writeEncoded = function (b) {
+            _base64 += String.fromCharCode(encode(b & 0x3f));
         };
 
-        var encode = function(n) {
+        var encode = function (n) {
             if (n < 0) {
                 // error.
             } else if (n < 26) {
@@ -2954,22 +3003,22 @@ Blockly.ReplMgr.qrcode = function() {
             throw new Error('n:' + n);
         };
 
-        _this.writeByte = function(n) {
+        _this.writeByte = function (n) {
 
             _buffer = (_buffer << 8) | (n & 0xff);
             _buflen += 8;
             _length += 1;
 
             while (_buflen >= 6) {
-                writeEncoded(_buffer >>> (_buflen - 6) );
+                writeEncoded(_buffer >>> (_buflen - 6));
                 _buflen -= 6;
             }
         };
 
-        _this.flush = function() {
+        _this.flush = function () {
 
             if (_buflen > 0) {
-                writeEncoded(_buffer << (6 - _buflen) );
+                writeEncoded(_buffer << (6 - _buflen));
                 _buffer = 0;
                 _buflen = 0;
             }
@@ -2983,7 +3032,7 @@ Blockly.ReplMgr.qrcode = function() {
             }
         };
 
-        _this.toString = function() {
+        _this.toString = function () {
             return _base64;
         };
 
@@ -2994,7 +3043,7 @@ Blockly.ReplMgr.qrcode = function() {
     // base64DecodeInputStream
     //---------------------------------------------------------------------
 
-    var base64DecodeInputStream = function(str) {
+    var base64DecodeInputStream = function (str) {
 
         var _str = str;
         var _pos = 0;
@@ -3003,7 +3052,7 @@ Blockly.ReplMgr.qrcode = function() {
 
         var _this = {};
 
-        _this.read = function() {
+        _this.read = function () {
 
             while (_buflen < 8) {
 
@@ -3020,21 +3069,21 @@ Blockly.ReplMgr.qrcode = function() {
                 if (c == '=') {
                     _buflen = 0;
                     return -1;
-                } else if (c.match(/^\s$/) ) {
+                } else if (c.match(/^\s$/)) {
                     // ignore if whitespace.
                     continue;
                 }
 
-                _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+                _buffer = (_buffer << 6) | decode(c.charCodeAt(0));
                 _buflen += 6;
             }
 
-            var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+            var n = (_buffer >>> (_buflen - 8)) & 0xff;
             _buflen -= 8;
             return n;
         };
 
-        var decode = function(c) {
+        var decode = function (c) {
             if (0x41 <= c && c <= 0x5a) {
                 return c - 0x41;
             } else if (0x61 <= c && c <= 0x7a) {
@@ -3057,7 +3106,7 @@ Blockly.ReplMgr.qrcode = function() {
     // gifImage (B/W)
     //---------------------------------------------------------------------
 
-    var gifImage = function(width, height) {
+    var gifImage = function (width, height) {
 
         var _width = width;
         var _height = height;
@@ -3065,11 +3114,11 @@ Blockly.ReplMgr.qrcode = function() {
 
         var _this = {};
 
-        _this.setPixel = function(x, y, pixel) {
+        _this.setPixel = function (x, y, pixel) {
             _data[y * _width + x] = pixel;
         };
 
-        _this.write = function(out) {
+        _this.write = function (out) {
 
             //---------------------------------
             // GIF Signature
@@ -3137,7 +3186,7 @@ Blockly.ReplMgr.qrcode = function() {
             out.writeString(';');
         };
 
-        var bitOutputStream = function(out) {
+        var bitOutputStream = function (out) {
 
             var _out = out;
             var _bitLength = 0;
@@ -3145,14 +3194,14 @@ Blockly.ReplMgr.qrcode = function() {
 
             var _this = {};
 
-            _this.write = function(data, length) {
+            _this.write = function (data, length) {
 
-                if ( (data >>> length) !== 0) {
+                if ((data >>> length) !== 0) {
                     throw new Error('length over');
                 }
 
                 while (_bitLength + length >= 8) {
-                    _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+                    _out.writeByte(0xff & ((data << _bitLength) | _bitBuffer));
                     length -= (8 - _bitLength);
                     data >>>= (8 - _bitLength);
                     _bitBuffer = 0;
@@ -3163,7 +3212,7 @@ Blockly.ReplMgr.qrcode = function() {
                 _bitLength = _bitLength + length;
             };
 
-            _this.flush = function() {
+            _this.flush = function () {
                 if (_bitLength > 0) {
                     _out.writeByte(_bitBuffer);
                 }
@@ -3172,7 +3221,7 @@ Blockly.ReplMgr.qrcode = function() {
             return _this;
         };
 
-        var getLZWRaster = function(lzwMinCodeSize) {
+        var getLZWRaster = function (lzwMinCodeSize) {
 
             var clearCode = 1 << lzwMinCodeSize;
             var endCode = (1 << lzwMinCodeSize) + 1;
@@ -3182,10 +3231,10 @@ Blockly.ReplMgr.qrcode = function() {
             var table = lzwTable();
 
             for (var i = 0; i < clearCode; i += 1) {
-                table.add(String.fromCharCode(i) );
+                table.add(String.fromCharCode(i));
             }
-            table.add(String.fromCharCode(clearCode) );
-            table.add(String.fromCharCode(endCode) );
+            table.add(String.fromCharCode(clearCode));
+            table.add(String.fromCharCode(endCode));
 
             var byteOut = byteArrayOutputStream();
             var bitOut = bitOutputStream(byteOut);
@@ -3203,7 +3252,7 @@ Blockly.ReplMgr.qrcode = function() {
                 var c = String.fromCharCode(_data[dataIndex]);
                 dataIndex += 1;
 
-                if (table.contains(s + c) ) {
+                if (table.contains(s + c)) {
 
                     s = s + c;
 
@@ -3213,7 +3262,7 @@ Blockly.ReplMgr.qrcode = function() {
 
                     if (table.size() < 0xfff) {
 
-                        if (table.size() == (1 << bitLength) ) {
+                        if (table.size() == (1 << bitLength)) {
                             bitLength += 1;
                         }
 
@@ -3234,30 +3283,30 @@ Blockly.ReplMgr.qrcode = function() {
             return byteOut.toByteArray();
         };
 
-        var lzwTable = function() {
+        var lzwTable = function () {
 
             var _map = {};
             var _size = 0;
 
             var _this = {};
 
-            _this.add = function(key) {
-                if (_this.contains(key) ) {
+            _this.add = function (key) {
+                if (_this.contains(key)) {
                     throw new Error('dup key:' + key);
                 }
                 _map[key] = _size;
                 _size += 1;
             };
 
-            _this.size = function() {
+            _this.size = function () {
                 return _size;
             };
 
-            _this.indexOf = function(key) {
+            _this.indexOf = function (key) {
                 return _map[key];
             };
 
-            _this.contains = function(key) {
+            _this.contains = function (key) {
                 return typeof _map[key] != 'undefined';
             };
 
@@ -3267,12 +3316,12 @@ Blockly.ReplMgr.qrcode = function() {
         return _this;
     };
 
-    var createImgTag = function(width, height, getPixel, alt) {
+    var createImgTag = function (width, height, getPixel, alt) {
 
         var gif = gifImage(width, height);
         for (var y = 0; y < height; y += 1) {
             for (var x = 0; x < width; x += 1) {
-                gif.setPixel(x, y, getPixel(x, y) );
+                gif.setPixel(x, y, getPixel(x, y));
             }
         }
 

@@ -7,15 +7,13 @@
 package com.google.appinventor.components.runtime.util;
 
 import android.util.Log;
-
 import com.google.appinventor.components.runtime.PhoneStatus;
 import com.google.appinventor.components.runtime.ReplForm;
-
-import java.util.ArrayList;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 
 /*
@@ -226,7 +224,7 @@ public class RetValManager {
         output.put("values", arrayoutput);
       } catch (JSONException e) {
         Log.e(LOG_TAG, "Error fetching retvals", e);
-        return("{\"status\" : \"BAD\", \"message\" : \"Failure in RetValManager\"}");
+        return ("{\"status\" : \"BAD\", \"message\" : \"Failure in RetValManager\"}");
       }
       currentArray.clear();       // empty it out
       return output.toString();
