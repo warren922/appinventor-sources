@@ -87,6 +87,20 @@ public class LoginServlet extends HttpServlet {
     super.init(config);
   }
 
+  private void _handleSyncCookie(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    Cookie[] cookies = req.getCookies();
+    resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+    if (cookies == null) {
+      return;
+    }
+    for (Cookie cookie : cookies) {
+      if ("AppInventor".equals(cookie.getName())) {
+        String rawData = cookie.getValue();
+        resp.getWriter().write(rawData);
+      }
+    }
+  }
+
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     resp.setContentType("text/html; charset=utf-8");
 
@@ -96,6 +110,10 @@ public class LoginServlet extends HttpServlet {
       LOG.info("requestURI = " + req.getRequestURI());
     }
     String page = getPage(req);
+    if (page.equals("syncCookie")) {
+      _handleSyncCookie(req, resp);
+      return;
+    }
 
     OdeAuthFilter.UserInfo userInfo = OdeAuthFilter.getUserInfo(req);
 
