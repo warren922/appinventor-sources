@@ -1,0 +1,7 @@
+.git
+.gitignore
+.idea
+.gitlab-ci.yml
+node_modules
+prisma
+Dockerfile

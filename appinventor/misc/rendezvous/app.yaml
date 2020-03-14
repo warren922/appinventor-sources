@@ -1,0 +1,8 @@
+# [START app_yaml]
+
+runtime: nodejs10
+
+env_variables:
+  PORT: 80
+
+# [END app_yaml]

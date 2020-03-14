@@ -1,6 +1,7 @@
 package com.google.appinventor.server;
 
 import javax.servlet.*;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -43,6 +44,11 @@ public class CORSFilter implements Filter {
     } else {
       LOG.log(Level.WARNING, origin + ": Rejected");
     }
+
+    // Fix Chrome need Cookie: SameSite=None;Secure problem
+    Cookie cook = new Cookie("SameSite", "None; Secure");
+//    cook.setPath("/");
+    resp.addCookie(cook);
 
     // Fix ios6 caching post requests
     if ("post".equalsIgnoreCase(req.getMethod())) {

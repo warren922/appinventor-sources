@@ -7,16 +7,20 @@ var exec = require('child_process').exec;
 // var sys = require('sys');
 var path = require('path');
 var requestHandler = http.IncomingMessage.prototype;
-var memcache = require('memcache');
-var mc = new memcache.Client();
-mc.connect();
+/* NodeJS GAE does not support memcache. Replace with node-cache */
+var NodeCache = require('node-cache');
+var mc = new NodeCache();
 var querystring = require('querystring');
+/* Until we figure out how to log on GAE, disable this
 var fs = require('fs');
 var wp = require('workerpool');
-// var sqlite3 = require('sqlite3');
+var sqlite3 = require('sqlite3');
+*/
 var Lock = require('async-lock');
 
-const pool = wp.pool(__dirname + '/logworker.js', {'maxWorkers': 1});
+/* Until we figure out how to log on GAE, disable this
+const pool = wp.pool(__dirname + '/logworker.js', {'maxWorkers' : 1});
+*/
 
 /**
  * Add a uniform interface for remote address in Node.js
@@ -70,9 +74,11 @@ var server = function (request, response) {
                 var version = data.version;
                 var api = data.api;
                 var ip = request.remote.ip;
-                if (!!api && !!ip && !!version) {
-                    pool.exec('recordVersion', [ip, api, version]);
-                }
+                /* Until we figure out how to log on GAE, disable this
+                        if (!!api && !!ip && !!version) {
+                            pool.exec('recordVersion', [ip, api, version]);
+                        }
+                */
                 if (key) {
                     var json = JSON.stringify(data);
                     mc.set('rr-' + key, json, 120); // Save for two minutes.
@@ -91,14 +97,15 @@ var server = function (request, response) {
                 var first = data['first'];
                 if (first) {
                     var apiversion = data['apiversion'];
-                    if (!apiversion) {
-                        apiversion = -1;
-                    }
-                    pool.exec('recordLog', [request.remote.ip, request.headers['user-agent'], apiversion]).then(function (result) {
-                    })
-                        .catch(function (err) {
-                            console.log("recordLog: " + err.message);
-                        });
+                    /* Until we figure out how to log on GAE, disable this
+                            if (!apiversion) {
+                                apiversion = -1;
+                            }
+                            pool.exec('recordLog', [request.remote.ip, request.headers['user-agent'], apiversion]).then(function(result) {})
+                                .catch(function(err) {
+                                    console.log("recordLog: " + err.message);
+                                });
+                    */
                 }
                 if (key) {
                     // In this case we append data to what is in memcache
@@ -219,11 +226,11 @@ var server = function (request, response) {
                 "Expires": "Fri, 01 Jan 1990 00:00:00 GMT"
             });
             response.end("<html>\n" +
-                "<head><title>MIT App Inventor Rendezvous Server</title></head>\n" +
+                "<head><title>youCodia AI2 Rendezvous Server</title></head>\n" +
                 "<body>\n" +
-                "<h1>MIT App Inventor Rendezvous Server</h1>\n" +
-                "<P>This is the MIT App Inventor Rendezvous Server, which appears to be\n" +
-                "operating normally.</p></body></html>\n");
+                "<h1>youCodia AI2 Rendezvous Server</h1>\n" +
+                "<p>This is the youCodia AI2 Rendezvous Server based on the MIT App Inventor Rendezvous Server.</p>\n" +
+                "<p>It appears to be operating normally.</p></body></html>\n");
         } else {
             response.writeHead(404, '', {});
             response.end("");
@@ -233,4 +240,3 @@ var server = function (request, response) {
 
 const PORT = process.env.PORT || 3000;  // GAE will furnish process.env.PORT
 http.createServer(server).listen(PORT);
-
