@@ -46,8 +46,9 @@ public class CORSFilter implements Filter {
     }
 
     // Fix Chrome need Cookie: SameSite=None;Secure problem
-    Cookie cook = new Cookie("SameSite", "None; Secure");
+    Cookie cook = new Cookie("SameSite", "None");
 //    cook.setPath("/");
+    cook.setSecure(true);
     resp.addCookie(cook);
 
     // Fix ios6 caching post requests
