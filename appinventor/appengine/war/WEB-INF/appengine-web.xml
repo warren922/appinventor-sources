@@ -66,7 +66,7 @@
          "example.com:8888" would mean the Rendezvous Server would be querired
          on http://example.com:8888/rendezvous/. -->
 
-    <property name="use.rendezvousserver" value=""/>
+    <property name="use.rendezvousserver" value="https://projc-ai3-stg.ygn.org.hk:11211"/>
 
     <!-- set to true if users should not be allowed to access the App
          Inventor server unless they are listed in the appengine/war/whitelist file -->
@@ -107,8 +107,7 @@
     <property name="localauth.mailserver.password" value="changeme" />
 
     <!-- host[:port] to use for connecting to the build server -->
-    <property name="build.server.host" value="35.220.192.56:9990" />
-<!--    <property name="build.server.host" value="35.187.194.184:9990" />-->
+    <property name="build.server.host" value="projc-ai3-stg.ygn.org.hk:9990" />
 
     <!-- We provide below for a second buildserver. If this field is
          non-empty then the user is presented a choice of two different
@@ -142,7 +141,6 @@
          This is useful when testing new servers where we don't want to require the
          buildserver to match -->
     <property name="build.send.git.version" value="true" />
-
     <!-- Session Management Variables. -->
     <!-- We define three variables here.
          All variables are defined in minutes
@@ -192,7 +190,6 @@
     <!-- This appears to be needed after a suspected change in how
          POSTs work with URLFetch around 09/20/2018 -->
     <property name="appengine.api.urlfetch.defaultDeadline" value="40"/>
-
     <!-- So the calls to the buildserver can re-use connections -->
     <property name="http.keepAlive" value="true" />
     <property name="http.maxConnections" value="5" />
