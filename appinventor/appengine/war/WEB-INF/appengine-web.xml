@@ -66,8 +66,7 @@
          "example.com:8888" would mean the Rendezvous Server would be querired
          on http://example.com:8888/rendezvous/. -->
 
-    <property name="use.rendezvousserver" value="https://projc-ai3-stg.ygn.org.hk:11211"/>
-
+    <property name="use.rendezvousserver" value="youcodia-ai2-ren.appspot.com"/>
     <!-- set to true if users should not be allowed to access the App
          Inventor server unless they are listed in the appengine/war/whitelist file -->
     <property name="use.whitelist" value="false"/>
